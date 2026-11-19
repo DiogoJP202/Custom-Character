@@ -24,14 +24,15 @@ test('the actual production reducer rejects retries even with a forged testMode 
     `data:text/javascript;base64,${Buffer.from(entry.code).toString('base64')}`
   );
   const saved = {
-    version: 2,
+    version: 3,
     phase: 'complete',
-    stepId: 'endurance',
+    stepId: 'energy-reserve',
     results: {
       nature: 'simurian',
       strength: 'megumi',
       speed: 'toji',
       endurance: 'hanami',
+      'energy-reserve': 'immense',
     },
   };
   const state = parseSavedGame(JSON.stringify(saved));

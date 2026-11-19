@@ -24,10 +24,12 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 ## O que está disponível
 
 - Capítulo 1 — Origem: Natureza e, para humanos, Linhagem.
-- Capítulo 2 — Atributos Físicos: Força física, Velocidade e Resistência para todas as naturezas.
+- Capítulo 2 — Condições especiais: somente humanos, após Linhagem.
+- Capítulo 3 — Atributos Físicos: Força física, Velocidade e Resistência para todas as naturezas.
+- Capítulo 4 — Reserva: energia amaldiçoada ou rolloluca, conforme a natureza.
 - Sorteio ponderado, segmentos proporcionais e parada no centro do resultado.
 - Uma rolagem por atributo, revelação, progressão e ficha parcial.
-- Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato versionado). Partidas antigas preservam os resultados válidos; fichas antigas concluídas e etapas indisponíveis retomam em Força física. Um giro é registrado antes da animação; recarregar revela o mesmo resultado.
+- Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato v3). Um giro é registrado antes da animação; recarregar revela o mesmo resultado. Partidas v1/v2 preservam os resultados: humanos sem atributos físicos passam pela nova roleta de nascimento; quando já havia atributos físicos, a condição fica explicitamente **não registrada**, sem sorteio retroativo. Fichas antigas concluídas retomam na reserva.
 - Ao encerrar, uma nova criação apaga todos os resultados anteriores.
 - Layout responsivo, teclado, anúncio do resultado e preferência por movimento reduzido.
 - Modo de teste somente em `npm run dev`, desligado por padrão: libera **Tentar novamente** no resultado e nos detalhes da ficha. Repetir apaga essa etapa e as seguintes. O build de produção bloqueia retry, mesmo com a flag manipulada.
@@ -44,7 +46,13 @@ Linhagem: Sem clã conhecido 70, Gojo 5, Zen’in 10, Kamo 10, Inumaki 5.
 
 `chapters` define os títulos dos capítulos. Cada roleta aponta para um `chapterId`, contém suas opções e pode ter `availableWhen: { stepId, optionId }`. Cada resultado mantém identificador, nome, descrição, rótulo, peso e cor. Referências físicas em `src/data/references.ts` acrescentam versão, feitos com contexto e fontes e limites da comparação. A ordem do catálogo determina o fluxo e a validação de partidas.
 
-Todos avançam de Origem para Atributos Físicos; somente humanos giram Linhagem. Cada atributo exige giro manual, revelação e Continuar. Segmentos menores que 10% usam marcadores numéricos maiores, correspondentes à legenda, sem alterar sua área. Alterações incompatíveis nos identificadores exigem uma migração explícita do salvamento.
+Humanos passam por Linhagem e Condição especial antes dos atributos físicos; outras naturezas pulam essas duas roletas. Cada atributo exige giro manual, revelação e Continuar. Segmentos menores que 10% usam marcadores numéricos maiores, correspondentes à legenda, sem alterar sua área. Alterações incompatíveis nos identificadores exigem uma migração explícita do salvamento.
+
+`src/data/special.ts` contém as novas opções (condições: 65/15/10/10; reserva: 15/25/25/20/15). `src/lib/conditions.ts` centraliza as compatibilidades. As referências físicas sorteadas são preservadas; nas restrições, uma **capacidade efetiva qualitativa** prevalece explicitamente sobre a comparação, sem somar poderes. Parcial usa Maki do Intercâmbio como referência limitada; completa determina físico extraordinário e energia ausente; Kokichi determina corpo debilitado, sem confundir alcance/output com estoque. Para a parcial, a única reserva compatível é Muito baixa (giro manual de 100%).
+
+A escala de reserva é uma abstração comum de gameplay, com explicação específica para humanos, espíritos, corpos artificiais e rolloluca simuriana. Não representa equivalência biológica ou quantitativa entre naturezas. O termo rolloluca segue o briefing; detalhes de sua fisiologia não foram inferidos de wikis ou de capítulos indisponíveis. Yuta contextualiza grandes reservas no cap. 140, sem conceder Rika ou técnica. Os links para catálogos oficiais são referências de leitura, não transcrições desses capítulos.
+
+O [PR #1 de rebalanceamento](https://github.com/DiogoJP202/Custom-Character/pull/1) permanece pendente, sem merge ou adoção automática dos pesos. Os testes também exercitam as distribuições propostas nele para garantir compatibilidade.
 
 `src/lib/wheel.ts` concentra a geometria e o sorteio. `src/lib/game.ts` controla estados e persistência. Os componentes `Wheel`, `ResultReveal` e `CharacterSheet` apresentam o jogo; `App` conecta as interações.
 

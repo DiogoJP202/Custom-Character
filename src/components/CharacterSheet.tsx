@@ -1,4 +1,5 @@
-import { chapters, getOption, isWheelAvailable, wheels } from '../data/wheels.ts';
+import { chapters, wheels } from '../data/wheels.ts';
+import { isStageAvailable, resultDetails, wheelForStep } from '../lib/conditions.ts';
 import type { GameState } from '../lib/game.ts';
 
 export default function CharacterSheet({
@@ -13,6 +14,7 @@ export default function CharacterSheet({
       ? Object.fromEntries(Object.entries(state.results).filter(([step]) => step !== state.stepId))
       : state.results;
   const count = Object.keys(visibleResults).length;
+  const visibleState = { ...state, results: visibleResults };
   return (
     <aside className="character-sheet" aria-labelledby="sheet-title">
       <div className="sheet-header">
@@ -38,23 +40,29 @@ export default function CharacterSheet({
             {wheels
               .filter((wheel) => wheel.chapterId === chapter.id)
               .map((wheel) => {
-                const result = getOption(wheel.id, visibleResults[wheel.id]);
+                const displayWheel = wheelForStep(wheel.id, visibleState)!;
+                const result = resultDetails(wheel.id, visibleState);
                 const inapplicable =
+                  !isStageAvailable(wheel, visibleState) &&
                   wheel.availableWhen &&
-                  !!visibleResults[wheel.availableWhen.stepId] &&
-                  !isWheelAvailable(wheel, visibleResults);
+                  !!visibleResults[wheel.availableWhen.stepId];
                 return (
                   <div className="sheet-attribute" key={wheel.id}>
-                    <dt>{wheel.name}</dt>
+                    <dt>{displayWheel.name}</dt>
                     <dd>
                       {result ? (
                         <button
                           className="sheet-result"
                           onClick={() => onInspect(wheel.id)}
-                          aria-label={`Ver detalhes de ${wheel.name}: ${result.name}`}
+                          aria-label={`Ver detalhes de ${displayWheel.name}: ${result.name}`}
                           aria-haspopup="dialog"
                         >
-                          <span>{result.name}</span>
+                          <span>
+                            {result.name}
+                            {result.adjustment && (
+                              <small className="sheet-effect">{result.adjustment.label}</small>
+                            )}
+                          </span>
                           <span className="sheet-detail-label">Detalhes</span>
                         </button>
                       ) : (
@@ -73,7 +81,7 @@ export default function CharacterSheet({
       ))}
       <div className="sheet-footer">
         <strong>
-          {count} resultado{count !== 1 ? 's' : ''}
+          {count} sorteio{count !== 1 ? 's' : ''} registrado{count !== 1 ? 's' : ''}
         </strong>
         <p>
           {count

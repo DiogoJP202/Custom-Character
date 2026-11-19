@@ -578,6 +578,18 @@ h1 {
   font-weight: 400;
   color: #58616a;
 }
+.sheet-effect {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #91313a;
+  margin-top: 5px;
+}
+.practical-description > .result-adjustment {
+  color: #e29da3;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
 .attribute-empty {
   color: #58616a;
   font-size: 14px;

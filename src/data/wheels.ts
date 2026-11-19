@@ -1,8 +1,12 @@
 import { physicalReferences, type CharacterReference } from './references.ts';
+import type { ReferenceSource } from './references.ts';
+import { birthOptions, energyOptions, energyNotes } from './special.ts';
 
 export const chapters = [
   { id: 'origin', name: 'Origem', hubLabel: 'ORIGEM' },
+  { id: 'birth', name: 'Condições especiais', hubLabel: 'CONDIÇÃO' },
   { id: 'physical', name: 'Atributos físicos', hubLabel: 'FÍSICO' },
+  { id: 'energy', name: 'Energia', hubLabel: 'ENERGIA' },
 ] as const;
 
 export interface WheelOption {
@@ -13,6 +17,13 @@ export interface WheelOption {
   weight: number;
   color: string;
   reference?: CharacterReference;
+  notes?: string;
+  sources?: ReferenceSource[];
+  adjustment?: {
+    capacity: 'enhanced' | 'extraordinary' | 'severely-limited';
+    label: string;
+    description: string;
+  };
 }
 
 export interface WheelDefinition {
@@ -125,6 +136,15 @@ export const wheels: WheelDefinition[] = [
           'Sua origem está ligada à família Inumaki, associada à técnica da Fala Amaldiçoada. A linhagem, sozinha, não atribui essa técnica ao personagem.',
       },
     ],
+  },
+  {
+    id: 'birth-condition',
+    chapterId: 'birth',
+    name: 'Condição especial',
+    description: 'Sorteie a condição de nascimento do personagem humano.',
+    availableWhen: { stepId: 'nature', optionId: 'human' },
+    unavailableLabel: 'Exclusiva para humanos',
+    options: birthOptions,
   },
   {
     id: 'strength',
@@ -310,6 +330,13 @@ export const wheels: WheelDefinition[] = [
       },
     ],
   },
+  {
+    id: 'energy-reserve',
+    chapterId: 'energy',
+    name: 'Reserva de energia amaldiçoada',
+    description: 'Sorteie a quantidade de energia disponível, sem definir controle ou output.',
+    options: energyOptions.map((option) => ({ ...option, notes: energyNotes })),
+  },
 ];
 
 export function isWheelAvailable(wheel: WheelDefinition, results: Record<string, string>): boolean {
@@ -318,11 +345,16 @@ export function isWheelAvailable(wheel: WheelDefinition, results: Record<string,
   );
 }
 
-export function getWheelProgress(wheel: WheelDefinition, results: Record<string, string>) {
+export function getWheelProgress(
+  wheel: WheelDefinition,
+  results: Record<string, string>,
+  available?: (entry: WheelDefinition) => boolean,
+) {
   const chapterIndex = chapters.findIndex(({ id }) => id === wheel.chapterId);
   const chapterWheels = wheels.filter(
     (entry) =>
       entry.chapterId === wheel.chapterId &&
+      (!available || available(entry)) &&
       (!entry.availableWhen ||
         !results[entry.availableWhen.stepId] ||
         isWheelAvailable(entry, results)),

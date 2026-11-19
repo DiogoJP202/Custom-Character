@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { getOption, getWheelProgress, wheels } from './data/wheels.ts';
+import { getWheelProgress } from './data/wheels.ts';
+import { isStageAvailable, resultDetails, wheelForStep } from './lib/conditions.ts';
 import { gameReducer, loadGame, saveGame } from './lib/game.ts';
 import { getSegments, pickOption, SMALL_SEGMENT_THRESHOLD } from './lib/wheel.ts';
 import Wheel from './components/Wheel.tsx';
@@ -18,8 +19,8 @@ export default function App() {
   const spinLock = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
-  const wheel = wheels.find(({ id }) => id === state.stepId)!;
-  const result = getOption(state.stepId, state.results[state.stepId]);
+  const wheel = wheelForStep(state.stepId, state)!;
+  const result = resultDetails(state.stepId, state);
   const terminal = state.phase === 'complete';
   const revealedResults =
     state.phase === 'spinning'
@@ -28,13 +29,16 @@ export default function App() {
   const { chapter, chapterNumber, stepNumber, totalSteps } = getWheelProgress(
     wheel,
     revealedResults,
+    (entry) =>
+      (entry.availableWhen && !revealedResults[entry.availableWhen.stepId]) ||
+      isStageAvailable(entry, { ...state, results: revealedResults }),
   );
   const chapterLabel = String(chapterNumber).padStart(2, '0');
   const isIntro = state.phase === 'intro';
   const segments = getSegments(wheel.options);
-  const inspectedWheel = wheels.find(({ id }) => id === inspectedStep);
+  const inspectedWheel = inspectedStep ? wheelForStep(inspectedStep, state) : undefined;
   const inspectedResult =
-    inspectedWheel && getOption(inspectedWheel.id, revealedResults[inspectedWheel.id]);
+    inspectedWheel && resultDetails(inspectedWheel.id, { ...state, results: revealedResults });
   const completeSpin = useCallback(() => dispatch({ type: 'reveal' }), []);
 
   useEffect(() => {
@@ -120,6 +124,12 @@ export default function App() {
               {terminal ? 'Criação concluída' : wheel.name}
             </h1>
             <p>{terminal ? 'Consulte os resultados na ficha do personagem.' : wheel.description}</p>
+            {state.legacyBirth && (
+              <p className="secondary-note">
+                Partida anterior: condição de nascimento não registrada. Seus resultados foram
+                preservados.
+              </p>
+            )}
             {testMode && (
               <p className="test-mode-note" role="status">
                 Modo de teste ativo. Você pode repetir os giros e testar outros resultados.
@@ -181,7 +191,7 @@ export default function App() {
                     </button>
                     <p className="secondary-note">
                       {isIntro
-                        ? 'Origem, linhagem e atributos físicos.'
+                        ? 'Origem, condição especial, atributos físicos e energia.'
                         : testMode
                           ? 'Modo de teste: novos giros estão liberados.'
                           : 'O resultado não pode ser alterado.'}
@@ -201,7 +211,10 @@ export default function App() {
               )}
               <details className="probabilities" key={`probabilities-${wheel.id}`}>
                 <summary>
-                  Resultados e probabilidades <span>{segments.length} opções</span>
+                  Resultados e probabilidades{' '}
+                  <span>
+                    {segments.length} {segments.length === 1 ? 'opção' : 'opções'}
+                  </span>
                 </summary>
                 <ol className="wheel-legend">
                   {segments.map(({ option, probability }, index) => (
@@ -249,7 +262,9 @@ export default function App() {
           result={inspectedResult}
           onClose={() => setInspectedStep(null)}
           onRetry={
-            testMode && state.phase !== 'spinning' ? () => retry(inspectedWheel.id) : undefined
+            testMode && state.phase !== 'spinning' && state.results[inspectedWheel.id]
+              ? () => retry(inspectedWheel.id)
+              : undefined
           }
         />
       )}

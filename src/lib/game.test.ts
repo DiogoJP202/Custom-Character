@@ -19,11 +19,12 @@ function origin(nature: string, lineage = 'gojo'): GameState {
   let state = gameReducer(initialState, { type: 'start' });
   state = gameReducer(roll(state, nature), { type: 'continue' });
   if (nature === 'human') state = gameReducer(roll(state, lineage), { type: 'continue' });
+  if (nature === 'human') state = gameReducer(roll(state, 'none'), { type: 'continue' });
   return state;
 }
 
 function finishPhysical(state: GameState): GameState {
-  for (const id of ['strength', 'speed', 'endurance']) {
+  for (const id of ['strength', 'speed', 'endurance', 'energy-reserve']) {
     assert.equal(state.stepId, id);
     assert.equal(state.phase, 'ready');
     state = roll(state, wheels.find((wheel) => wheel.id === id)!.options.at(-1)!.id);
@@ -33,28 +34,32 @@ function finishPhysical(state: GameState): GameState {
   return state;
 }
 
-test('every human lineage enters chapter 2 and finishes all three physical attributes', () => {
+test('every human lineage passes birth conditions, physical attributes and energy', () => {
   for (const lineage of wheels.find((wheel) => wheel.id === 'lineage')!.options) {
     const chapterTwo = origin('human', lineage.id);
     assert.equal(chapterTwo.stepId, 'strength');
-    assert.deepEqual(chapterTwo.results, { nature: 'human', lineage: lineage.id });
+    assert.deepEqual(chapterTwo.results, {
+      nature: 'human',
+      lineage: lineage.id,
+      'birth-condition': 'none',
+    });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(Object.keys(complete.results).length, 5);
+    assert.equal(Object.keys(complete.results).length, 7);
     assert.equal(complete.results.lineage, lineage.id);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
     assert.deepEqual(gameReducer(complete, { type: 'reset' }), { ...initialState, phase: 'ready' });
   }
 });
 
-test('all nonhuman natures skip lineage and finish chapter 2 without an unavailable screen', () => {
+test('all nonhuman natures skip lineage and birth and finish physical attributes and energy', () => {
   for (const nature of ['cursed-spirit', 'independent-cursed-corpse', 'simurian']) {
     const chapterTwo = origin(nature);
     assert.deepEqual(chapterTwo.results, { nature });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(complete.stepId, 'endurance');
-    assert.equal(Object.keys(complete.results).length, 4);
+    assert.equal(complete.stepId, 'energy-reserve');
+    assert.equal(Object.keys(complete.results).length, 5);
     assert.equal(complete.results.lineage, undefined);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
   }
@@ -67,8 +72,8 @@ test('chapter and step indicators follow the catalog and conditional lineage', (
   assert.equal(getWheelProgress(nature, {}).totalSteps, 2);
   assert.equal(getWheelProgress(nature, { nature: 'simurian' }).totalSteps, 1);
   assert.deepEqual(getWheelProgress(strength, { nature: 'simurian' }), {
-    chapter: chapters[1],
-    chapterNumber: 2,
+    chapter: chapters[2],
+    chapterNumber: 3,
     stepNumber: 1,
     totalSteps: 3,
   });
@@ -122,17 +127,17 @@ test('all phases of human and nonhuman games restore; interrupted spins reveal t
   }
 });
 
-test('legacy completed humans and pending/completed nonhumans resume at strength, preserving origin', () => {
+test('legacy origin saves enter birth for humans and physical attributes for nonhumans', () => {
   const humanResults = { nature: 'human', lineage: 'gojo' };
   assert.deepEqual(
     parseSavedGame(JSON.stringify({ phase: 'complete', stepId: 'lineage', results: humanResults })),
-    { version: 2, phase: 'ready', stepId: 'strength', results: humanResults },
+    { version: 3, phase: 'ready', stepId: 'birth-condition', results: humanResults },
   );
   for (const nature of ['cursed-spirit', 'independent-cursed-corpse', 'simurian']) {
     for (const phase of ['pending', 'complete']) {
       assert.deepEqual(
         parseSavedGame(JSON.stringify({ phase, stepId: 'nature', results: { nature } })),
-        { version: 2, phase: 'ready', stepId: 'strength', results: { nature } },
+        { version: 3, phase: 'ready', stepId: 'strength', results: { nature } },
       );
     }
   }
@@ -148,7 +153,7 @@ test('legacy in-progress origin saves retain their current stage and committed r
   ]) {
     assert.deepEqual(parseSavedGame(JSON.stringify(saved)), {
       ...saved,
-      version: 2,
+      version: 3,
       phase: saved.phase === 'spinning' ? 'revealed' : saved.phase,
     });
   }
@@ -236,7 +241,7 @@ test('storage round-trips versioned games and blocked storage does not interrupt
     });
     const state = origin('simurian');
     saveGame(state);
-    assert.equal(JSON.parse(values.get(STORAGE_KEY)!).version, 2);
+    assert.equal(JSON.parse(values.get(STORAGE_KEY)!).version, 3);
     assert.deepEqual(loadGame(), state);
     Object.defineProperty(globalThis, 'localStorage', {
       configurable: true,
@@ -254,7 +259,15 @@ test('storage round-trips versioned games and blocked storage does not interrupt
 
 test('test retries preserve earlier rolls and clear the selected stage and everything after it', () => {
   const complete = finishPhysical(origin('human'));
-  for (const stepId of ['nature', 'lineage', 'strength', 'speed', 'endurance']) {
+  for (const stepId of [
+    'nature',
+    'lineage',
+    'birth-condition',
+    'strength',
+    'speed',
+    'endurance',
+    'energy-reserve',
+  ]) {
     const retried = gameReducer(complete, { type: 'retry', stepId, testMode: true });
     const index = wheels.findIndex((wheel) => wheel.id === stepId);
     const expected = Object.fromEntries(

@@ -60,7 +60,11 @@ test('existing completed saves keep their IDs and expose the new reference detai
     },
   };
   const restored = parseSavedGame(JSON.stringify(saved));
-  assert.deepEqual(restored, saved);
+  assert.deepEqual(restored.results, saved.results);
+  assert.equal(restored.version, 3);
+  assert.equal(restored.legacyBirth, true);
+  assert.equal(restored.stepId, 'energy-reserve');
+  assert.equal(restored.phase, 'ready');
   for (const step of ['strength', 'speed', 'endurance']) {
     assert.ok(getOption(step, restored.results[step])?.reference?.feats.length);
   }

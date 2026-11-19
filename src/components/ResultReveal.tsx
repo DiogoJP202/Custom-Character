@@ -31,12 +31,18 @@ function ResultContent({
           <h2 id={headingId} ref={headingRef} tabIndex={-1}>
             {result.name}
           </h2>
-          {reference && <p className="reference-version">{reference.version}</p>}
+          {reference && (
+            <p className="reference-version">
+              {result.adjustment && 'Referência sorteada · '}
+              {reference.version}
+            </p>
+          )}
         </div>
       </header>
       <div className={`result-body ${reference ? '' : 'simple-result'}`}>
         <section className="practical-description">
           <h3>{reference ? 'No seu personagem' : 'Descrição'}</h3>
+          {result.adjustment && <p className="result-adjustment">{result.adjustment.label}</p>}
           <p>{result.description}</p>
           {reference && (
             <p className="comparison-note">
@@ -44,49 +50,67 @@ function ResultContent({
             </p>
           )}
         </section>
-        {representativeFeat && (
+        {representativeFeat && !result.adjustment && (
           <section className="representative-feat" aria-label="Feito representativo">
             <h3>Na obra</h3>
             <p>{representativeFeat.description}</p>
           </section>
         )}
-        {reference && (
+        {(reference || result.notes || result.sources?.length) && (
           <details className="reference-details">
             <summary>
-              Feitos, fontes e limites <span aria-hidden="true">+</span>
+              {reference ? 'Feitos, fontes e limites' : 'Contexto, fontes e limites'}{' '}
+              <span aria-hidden="true">+</span>
             </summary>
             <div className="reference-details-body">
-              <section className="reference-feats" aria-label="Feitos e contexto">
-                <h3>Feitos e contexto</h3>
-                <ul>
-                  {reference.feats.map((feat) => (
-                    <li key={`${feat.source.url}-${feat.description}`}>
-                      <p className="feat-description">{feat.description}</p>
-                      <p className="feat-context">{feat.context}</p>
-                      <a
-                        className="reference-source"
-                        href={feat.source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={`Abrir sinopse oficial em nova aba: ${feat.source.label}`}
-                      >
-                        {feat.source.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-              <section className="comparison-limits">
-                <h3>Limites da comparação</h3>
-                <p>{reference.limitations}</p>
-              </section>
-              <p className="reference-disclaimer">
-                A aplicação deste desempenho ao seu personagem é uma abstração do jogo, não uma
-                classificação oficial. As cenas podem incluir reforço de energia amaldiçoada, armas
-                e técnicas; a obra não fornece uma medida isolada do corpo. Este resultado não
-                concede esses recursos. Os links levam às sinopses oficiais dos episódios; elas
-                resumem o confronto, sem descrever cada movimento.
-              </p>
+              {result.notes && <p className="feat-context">{result.notes}</p>}
+              {result.sources?.map((source) => (
+                <p key={source.url}>
+                  <a
+                    className="reference-source"
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {source.label}
+                  </a>
+                </p>
+              ))}
+              {reference && (
+                <>
+                  <section className="reference-feats" aria-label="Feitos e contexto">
+                    <h3>Feitos e contexto</h3>
+                    <ul>
+                      {reference.feats.map((feat) => (
+                        <li key={`${feat.source.url}-${feat.description}`}>
+                          <p className="feat-description">{feat.description}</p>
+                          <p className="feat-context">{feat.context}</p>
+                          <a
+                            className="reference-source"
+                            href={feat.source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`Abrir sinopse oficial em nova aba: ${feat.source.label}`}
+                          >
+                            {feat.source.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                  <section className="comparison-limits">
+                    <h3>Limites da comparação</h3>
+                    <p>{reference.limitations}</p>
+                  </section>
+                  <p className="reference-disclaimer">
+                    A aplicação deste desempenho ao seu personagem é uma abstração do jogo, não uma
+                    classificação oficial. As cenas podem incluir reforço de energia amaldiçoada,
+                    armas e técnicas; a obra não fornece uma medida isolada do corpo. Este resultado
+                    não concede esses recursos. Os links levam às sinopses oficiais dos episódios;
+                    elas resumem o confronto, sem descrever cada movimento.
+                  </p>
+                </>
+              )}
             </div>
           </details>
         )}
