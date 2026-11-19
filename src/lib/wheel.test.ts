@@ -7,13 +7,13 @@ test('nature angles and probabilities exactly represent configured weights', () 
   const segments = getSegments(wheels[0].options);
   assert.deepEqual(
     segments.map(({ probability }) => probability),
-    [0.7, 0.2, 0.08, 0.02],
+    [0.45, 0.3, 0.17, 0.08],
   );
   const expected = [
-    [0, 252],
-    [252, 324],
-    [324, 352.8],
-    [352.8, 360],
+    [0, 162],
+    [162, 270],
+    [270, 331.2],
+    [331.2, 360],
   ];
   segments.forEach(({ start, end }, index) => {
     assert.ok(Math.abs(start - expected[index][0]) < 1e-9);
@@ -37,9 +37,9 @@ test('every wheel selects each interval including its lower and upper boundaries
     assert.equal(pickOption(wheel.options, () => 0).id, wheel.options[0].id);
     assert.equal(pickOption(wheel.options, () => 1 - Number.EPSILON).id, wheel.options.at(-1)!.id);
   }
-  assert.equal(pickOption(wheels[0].options, () => 0.7).id, 'cursed-spirit');
-  assert.equal(pickOption(wheels[0].options, () => 0.9).id, 'independent-cursed-corpse');
-  assert.equal(pickOption(wheels[0].options, () => 0.98).id, 'simurian');
+  assert.equal(pickOption(wheels[0].options, () => 0.45).id, 'cursed-spirit');
+  assert.equal(pickOption(wheels[0].options, () => 0.75).id, 'independent-cursed-corpse');
+  assert.equal(pickOption(wheels[0].options, () => 0.92).id, 'simurian');
 });
 
 test('a stratified sample gives exactly the configured percentages without flaky sampling', () => {
