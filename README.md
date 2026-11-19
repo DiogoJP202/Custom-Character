@@ -30,6 +30,7 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 - Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato versionado). Partidas antigas preservam os resultados válidos; fichas antigas concluídas e etapas indisponíveis retomam em Força física. Um giro é registrado antes da animação; recarregar revela o mesmo resultado.
 - Ao encerrar, uma nova criação apaga todos os resultados anteriores.
 - Layout responsivo, teclado, anúncio do resultado e preferência por movimento reduzido.
+- Modo de teste opcional no topo: libera **Tentar novamente** no resultado e nos detalhes da ficha. Repetir apaga essa etapa e as seguintes. O modo inicia desligado.
 
 Se o navegador bloquear o armazenamento, a criação continua em memória até a página ser fechada ou recarregada. O salvamento é local à origem/endereço usado para abrir o site.
 

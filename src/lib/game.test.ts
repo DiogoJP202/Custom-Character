@@ -251,3 +251,58 @@ test('storage round-trips versioned games and blocked storage does not interrupt
     else Reflect.deleteProperty(globalThis, 'localStorage');
   }
 });
+
+test('test retries preserve earlier rolls and clear the selected stage and everything after it', () => {
+  const complete = finishPhysical(origin('human'));
+  for (const stepId of ['nature', 'lineage', 'strength', 'speed', 'endurance']) {
+    const retried = gameReducer(complete, { type: 'retry', stepId, testMode: true });
+    const index = wheels.findIndex((wheel) => wheel.id === stepId);
+    const expected = Object.fromEntries(
+      wheels.slice(0, index).map((wheel) => [wheel.id, complete.results[wheel.id]]),
+    );
+    assert.equal(retried.phase, 'ready');
+    assert.equal(retried.stepId, stepId);
+    assert.deepEqual(retried.results, expected);
+    assert.deepEqual(parseSavedGame(JSON.stringify(retried)), retried);
+  }
+});
+
+test('test retries support repeated identical outcomes and changes between human and nonhuman paths', () => {
+  let state = roll(gameReducer(initialState, { type: 'start' }), 'simurian');
+  for (let attempt = 0; attempt < 3; attempt++) {
+    state = gameReducer(state, { type: 'retry', stepId: 'nature', testMode: true });
+    assert.equal(state.results.nature, undefined);
+    state = roll(state, 'simurian');
+    assert.equal(state.results.nature, 'simurian');
+  }
+  const oldHuman = finishPhysical(origin('human', 'gojo'));
+  state = gameReducer(oldHuman, { type: 'retry', stepId: 'nature', testMode: true });
+  state = gameReducer(roll(state, 'simurian'), { type: 'continue' });
+  assert.equal(state.stepId, 'strength');
+  assert.deepEqual(state.results, { nature: 'simurian' });
+  state = gameReducer(state, { type: 'retry', stepId: 'nature', testMode: true });
+  state = gameReducer(roll(state, 'human'), { type: 'continue' });
+  assert.equal(state.stepId, 'lineage');
+  assert.deepEqual(state.results, { nature: 'human' });
+});
+
+test('normal play and spinning stages reject retries; unknown or unrolled stages stay unchanged', () => {
+  const revealed = roll(gameReducer(initialState, { type: 'start' }), 'human');
+  assert.strictEqual(
+    gameReducer(revealed, { type: 'retry', stepId: 'nature', testMode: false }),
+    revealed,
+  );
+  assert.strictEqual(
+    gameReducer(revealed, { type: 'retry', stepId: 'unknown', testMode: true }),
+    revealed,
+  );
+  assert.strictEqual(
+    gameReducer(revealed, { type: 'retry', stepId: 'lineage', testMode: true }),
+    revealed,
+  );
+  const spinning = gameReducer(origin('human'), { type: 'spin', optionId: 'megumi' });
+  assert.strictEqual(
+    gameReducer(spinning, { type: 'retry', stepId: 'nature', testMode: true }),
+    spinning,
+  );
+});

@@ -9,6 +9,8 @@ import ResultReveal, { ResultDialog } from './components/ResultReveal.tsx';
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, loadGame);
   const [inspectedStep, setInspectedStep] = useState<string | null>(null);
+  const [testMode, setTestMode] = useState(false);
+  const [wheelRun, setWheelRun] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
@@ -60,6 +62,16 @@ export default function App() {
     dispatch({ type: 'spin', optionId: option.id });
   }
 
+  function retry(stepId = state.stepId) {
+    const action = { type: 'retry' as const, stepId, testMode };
+    const next = gameReducer(state, action);
+    if (next === state) return;
+    saveGame(next);
+    setInspectedStep(null);
+    setWheelRun((run) => run + 1);
+    dispatch(action);
+  }
+
   return (
     <div className="app-shell">
       <a className="skip-link" href="#game">
@@ -79,7 +91,15 @@ export default function App() {
         <p className="header-context">
           JUJUTSU KAISEN <span>FAN GAME</span>
         </p>
-        <span className="header-edition">CRIADOR DE PERSONAGENS</span>
+        <button
+          className={`test-mode-toggle ${testMode ? 'is-active' : ''}`}
+          aria-pressed={testMode}
+          disabled={state.phase === 'spinning'}
+          onClick={() => setTestMode((enabled) => !enabled)}
+        >
+          <span className="test-label">Modo de teste</span>
+          <span className="test-label-compact">Teste</span>
+        </button>
       </header>
       <main id="game" className="game-layout">
         <section className="play-area" aria-labelledby="game-title">
@@ -96,6 +116,11 @@ export default function App() {
               {terminal ? 'Criação concluída' : wheel.name}
             </h1>
             <p>{terminal ? 'Consulte os resultados na ficha do personagem.' : wheel.description}</p>
+            {testMode && (
+              <p className="test-mode-note" role="status">
+                Modo de teste ativo. Você pode repetir os giros e testar outros resultados.
+              </p>
+            )}
           </div>
           {terminal ? (
             <section className="completion-panel" aria-label="Criação concluída">
@@ -105,12 +130,17 @@ export default function App() {
               <button className="button button-primary" onClick={() => dispatch({ type: 'reset' })}>
                 Criar outro personagem
               </button>
+              {testMode && (
+                <button className="button button-secondary" onClick={() => retry()}>
+                  Tentar novamente
+                </button>
+              )}
               <p className="secondary-note">Substitui a ficha atual.</p>
             </section>
           ) : (
             <>
               <Wheel
-                key={wheel.id}
+                key={`${wheel.id}-${wheelRun}`}
                 definition={wheel}
                 spinning={state.phase === 'spinning'}
                 resultId={result?.id}
@@ -148,7 +178,9 @@ export default function App() {
                     <p className="secondary-note">
                       {isIntro
                         ? 'Origem, linhagem e atributos físicos.'
-                        : 'O resultado não pode ser alterado.'}
+                        : testMode
+                          ? 'Modo de teste: novos giros estão liberados.'
+                          : 'O resultado não pode ser alterado.'}
                     </p>
                   </>
                 )}
@@ -159,6 +191,7 @@ export default function App() {
                   result={result}
                   focusOnMount={!inspectedResult}
                   onContinue={() => dispatch({ type: 'continue' })}
+                  onRetry={testMode ? () => retry() : undefined}
                 />
               )}
               <details className="probabilities" key={`probabilities-${wheel.id}`}>
@@ -210,6 +243,9 @@ export default function App() {
           attribute={inspectedWheel.name}
           result={inspectedResult}
           onClose={() => setInspectedStep(null)}
+          onRetry={
+            testMode && state.phase !== 'spinning' ? () => retry(inspectedWheel.id) : undefined
+          }
         />
       )}
     </div>

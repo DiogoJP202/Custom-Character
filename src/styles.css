@@ -352,6 +352,50 @@ h1 {
   background: #6e373d;
   color: #dfd6d7;
 }
+.button-secondary {
+  border: 1px solid #7f8e98;
+  background: transparent;
+  color: #e8e3d9;
+}
+.button-secondary:hover {
+  background: #303840;
+}
+.test-mode-toggle {
+  flex-shrink: 0;
+  border: 1px solid #526b78;
+  background: transparent;
+  color: #c1c9cf;
+  padding: 9px 12px;
+  min-height: 40px;
+  font-size: 13px;
+}
+.test-mode-toggle.is-active {
+  background: #bd303b;
+  border-color: #bd303b;
+  color: white;
+}
+.test-mode-toggle:disabled {
+  opacity: 0.6;
+}
+.test-label-compact {
+  display: none;
+}
+.game-heading > .test-mode-note {
+  color: #e29da3;
+  margin-top: 8px;
+  font-size: 13px;
+}
+.test-retry-actions {
+  padding: 0 28px 28px;
+}
+.test-retry-actions > p {
+  color: #b4bcc3;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.completion-panel > .button + .button {
+  margin-left: 12px;
+}
 .spin-button {
   min-width: 252px;
 }
@@ -716,6 +760,8 @@ h1 {
   margin: 20px 0 0;
 }
 .result-actions {
+  gap: 12px;
+  flex-wrap: wrap;
   position: sticky;
   bottom: 0;
   z-index: 1;
@@ -967,12 +1013,25 @@ h1 {
   }
 }
 @media (max-width: 700px) {
+  .test-label {
+    display: none;
+  }
+  .test-label-compact {
+    display: inline;
+  }
+  .test-mode-toggle {
+    padding: 8px;
+    font-size: 12px;
+  }
+  .completion-panel > .button + .button {
+    margin: 12px 0 0;
+  }
   .app-shell {
     padding: 0 20px;
   }
   .site-header {
     min-height: 75px;
-    gap: 16px;
+    gap: 8px;
   }
   .brand-mark {
     gap: 2px;

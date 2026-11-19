@@ -84,11 +84,13 @@ export default function ResultReveal({
   attribute,
   result,
   onContinue,
+  onRetry,
   focusOnMount = true,
 }: {
   attribute: string;
   result: WheelOption;
   onContinue: () => void;
+  onRetry?: () => void;
   focusOnMount?: boolean;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
@@ -109,6 +111,11 @@ export default function ResultReveal({
         headingRef={heading}
       />
       <div className="result-actions">
+        {onRetry && (
+          <button className="button button-secondary" onClick={onRetry}>
+            Tentar novamente
+          </button>
+        )}
         <button className="button button-primary" onClick={onContinue}>
           Continuar
         </button>
@@ -121,10 +128,12 @@ export function ResultDialog({
   attribute,
   result,
   onClose,
+  onRetry,
 }: {
   attribute: string;
   result: WheelOption;
   onClose: () => void;
+  onRetry?: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -166,6 +175,14 @@ export function ResultDialog({
         </button>
       </div>
       <ResultContent attribute={attribute} result={result} headingId="detail-title" />
+      {onRetry && (
+        <div className="test-retry-actions">
+          <p>Repetir esta etapa apaga este resultado e os seguintes.</p>
+          <button className="button button-secondary" onClick={onRetry}>
+            Tentar novamente
+          </button>
+        </div>
+      )}
     </dialog>
   );
 }

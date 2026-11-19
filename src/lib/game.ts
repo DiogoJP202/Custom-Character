@@ -12,6 +12,7 @@ export type Action =
   | { type: 'spin'; optionId: string }
   | { type: 'reveal' }
   | { type: 'continue' }
+  | { type: 'retry'; stepId: string; testMode: boolean }
   | { type: 'reset' };
 
 // Keep the key to recover existing saves; version distinguishes the expanded flow.
@@ -50,6 +51,25 @@ export function gameReducer(state: GameState, action: Action): GameState {
       if (state.phase !== 'revealed') return state;
       const next = nextWheel(state);
       return next ? { ...state, stepId: next.id, phase: 'ready' } : { ...state, phase: 'complete' };
+    }
+    case 'retry': {
+      if (
+        !action.testMode ||
+        state.phase === 'spinning' ||
+        !Object.hasOwn(state.results, action.stepId)
+      )
+        return state;
+      const index = wheels.findIndex((wheel) => wheel.id === action.stepId);
+      if (index < 0) return state;
+      const earlierSteps = new Set(wheels.slice(0, index).map((wheel) => wheel.id));
+      return {
+        ...state,
+        phase: 'ready',
+        stepId: action.stepId,
+        results: Object.fromEntries(
+          Object.entries(state.results).filter(([id]) => earlierSteps.has(id)),
+        ),
+      };
     }
     case 'reset':
       return state.phase === 'complete' ? { ...initialState, phase: 'ready' } : state;
