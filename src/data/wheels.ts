@@ -38,7 +38,7 @@ export const wheels: WheelDefinition[] = [
         id: 'human',
         name: 'Humano',
         shortLabel: 'HUMANO',
-        weight: 70,
+        weight: 45,
         color: '#91313a',
         description:
           'Ser humano. A próxima roleta define sua linhagem; esse resultado não determina uma técnica amaldiçoada.',
@@ -47,7 +47,7 @@ export const wheels: WheelDefinition[] = [
         id: 'cursed-spirit',
         name: 'Espírito amaldiçoado',
         shortLabel: 'ESPÍRITO',
-        weight: 20,
+        weight: 30,
         color: '#3d5663',
         description: 'Manifestação de energia amaldiçoada associada às emoções negativas humanas.',
       },
@@ -55,7 +55,7 @@ export const wheels: WheelDefinition[] = [
         id: 'independent-cursed-corpse',
         name: 'Cadáver amaldiçoado independente',
         shortLabel: 'CADÁVER',
-        weight: 8,
+        weight: 17,
         color: '#4c5c52',
         description:
           'Um corpo artificial animado por energia amaldiçoada e capaz de agir de forma independente. Panda é um exemplo dessa existência na obra.',
@@ -64,7 +64,7 @@ export const wheels: WheelDefinition[] = [
         id: 'simurian',
         name: 'Simuriano',
         shortLabel: 'SIMURIANO',
-        weight: 2,
+        weight: 8,
         color: '#6e3d3f',
         description:
           'Integrante do povo extraterrestre apresentado em Jujutsu Kaisen Modulo. Não define habilidades específicas.',
@@ -83,7 +83,7 @@ export const wheels: WheelDefinition[] = [
         id: 'no-known-clan',
         name: 'Sem clã conhecido',
         shortLabel: 'SEM CLÃ',
-        weight: 70,
+        weight: 40,
         color: '#91313a',
         description:
           'Nenhuma ligação com os clãs listados foi estabelecida nesta criação. Isso não define seu potencial nem determina se você possui uma técnica.',
@@ -92,7 +92,7 @@ export const wheels: WheelDefinition[] = [
         id: 'gojo',
         name: 'Clã Gojo',
         shortLabel: 'GOJO',
-        weight: 5,
+        weight: 15,
         color: '#66584e',
         description:
           'Sua linhagem está ligada ao clã Gojo, uma das três grandes famílias do jujutsu. Esse vínculo não garante o Ilimitado ou os Seis Olhos.',
@@ -101,7 +101,7 @@ export const wheels: WheelDefinition[] = [
         id: 'zenin',
         name: 'Clã Zen’in',
         shortLabel: 'ZEN’IN',
-        weight: 10,
+        weight: 18,
         color: '#3d5663',
         description:
           'Sua linhagem está ligada ao clã Zen’in, uma das três grandes famílias do jujutsu. Pertencer ao clã não determina sua técnica amaldiçoada.',
@@ -110,7 +110,7 @@ export const wheels: WheelDefinition[] = [
         id: 'kamo',
         name: 'Clã Kamo',
         shortLabel: 'KAMO',
-        weight: 10,
+        weight: 17,
         color: '#4c5c52',
         description:
           'Sua linhagem está ligada ao clã Kamo, uma das três grandes famílias do jujutsu. Essa origem não concede automaticamente uma técnica hereditária.',
@@ -119,7 +119,7 @@ export const wheels: WheelDefinition[] = [
         id: 'inumaki',
         name: 'Família Inumaki',
         shortLabel: 'INUMAKI',
-        weight: 5,
+        weight: 10,
         color: '#6e3d3f',
         description:
           'Sua origem está ligada à família Inumaki, associada à técnica da Fala Amaldiçoada. A linhagem, sozinha, não atribui essa técnica ao personagem.',
@@ -137,7 +137,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['strength.megumi'],
         name: 'Megumi Fushiguro',
         shortLabel: 'MEGUMI',
-        weight: 30,
+        weight: 21,
         color: '#91313a',
         description:
           'Força de um feiticeiro treinado para bloquear, golpear e disputar o corpo a corpo. Megumi enfrenta Kamo assim, mas combina o físico com shikigamis e estratégia. A referência é essa capacidade de troca, sem copiar a força das invocações.',
@@ -147,7 +147,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['strength.panda'],
         name: 'Panda',
         shortLabel: 'PANDA',
-        weight: 25,
+        weight: 19,
         color: '#3d5663',
         description:
           'Força de contato para pressionar a guarda, conter investidas e responder com golpes diretos. Panda leva esse tipo de disputa ao combate com Mechamaru. A referência não soma suas formas nem concede o modo gorila.',
@@ -157,7 +157,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['strength.maki-goodwill'],
         name: 'Maki Zen’in',
         shortLabel: 'MAKI',
-        weight: 20,
+        weight: 18,
         color: '#4c5c52',
         description:
           'Força para controlar uma arma, disputar a guarda e desarmar no combate próximo. Maki impõe essa pressão a Miwa no Intercâmbio. O resultado representa o esforço corporal, sem conceder a arma ou copiar seu dano.',
@@ -167,7 +167,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['strength.todo'],
         name: 'Aoi Todo',
         shortLabel: 'TODO',
-        weight: 15,
+        weight: 17,
         color: '#66584e',
         description:
           'Golpes pesados e força para manter pressão numa disputa corpo a corpo. Todo exige que Yuji se defenda e ajuste sua forma de lutar durante o Intercâmbio. A comparação não concede seu reforço de energia ou Boogie Woogie.',
@@ -177,7 +177,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['strength.yuji-goodwill'],
         name: 'Yuji Itadori',
         shortLabel: 'YUJI',
-        weight: 8,
+        weight: 15,
         color: '#2e424f',
         description:
           'Força para responder com socos e investidas mesmo numa troca física intensa. Yuji consegue enfrentar Todo corpo a corpo, embora ainda precise corrigir sua execução. O resultado não reproduz Black Flash, Punho Divergente ou poderes de Sukuna.',
@@ -187,7 +187,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['strength.toji'],
         name: 'Toji Fushiguro',
         shortLabel: 'TOJI',
-        weight: 2,
+        weight: 10,
         color: '#6e3d3f',
         description:
           'Força bruta para impor pressão a curta distância e aplicar golpes vigorosos com uma arma. Toji reanimado demonstra isso ao atacar Dagon em Shibuya. O dano da Nuvem Brincalhona não é convertido em força desarmada, e a arma não é concedida.',
@@ -205,7 +205,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['speed.megumi'],
         name: 'Megumi Fushiguro',
         shortLabel: 'MEGUMI',
-        weight: 35,
+        weight: 26,
         color: '#91313a',
         description:
           'Mobilidade para ajustar a distância, reagir a golpes e recuar sem abandonar a defesa. Megumi troca ataques com Kamo e tenta escapar de Hanami com o grupo. Isso não garante superar esses adversários em velocidade nem inclui transporte por shikigamis.',
@@ -215,7 +215,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['speed.maki-goodwill'],
         name: 'Maki Zen’in',
         shortLabel: 'MAKI',
-        weight: 30,
+        weight: 23,
         color: '#3d5663',
         description:
           'Agilidade para encurtar a distância e agir antes que uma abertura se feche. Maki usa movimentação e reação para pressionar Miwa no Intercâmbio. A referência não separa completamente o movimento da habilidade com armas e não inclui sua evolução posterior.',
@@ -235,7 +235,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['speed.todo'],
         name: 'Aoi Todo',
         shortLabel: 'TODO',
-        weight: 10,
+        weight: 18,
         color: '#66584e',
         description:
           'Reação para acompanhar os ataques de Yuji e ajustar a posição entre golpes. Todo mantém a troca enquanto observa e corrige o adversário. Isso representa resposta corporal, sem copiar a troca instantânea de posições de Boogie Woogie.',
@@ -245,7 +245,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['speed.toji'],
         name: 'Toji Fushiguro',
         shortLabel: 'TOJI',
-        weight: 5,
+        weight: 13,
         color: '#6e3d3f',
         description:
           'Arrancadas e mudanças de posição que deixam pouco tempo para o adversário reagir. Toji reanimado pressiona Megumi com suas investidas em Shibuya. É uma referência de movimento corporal, sem teletransporte ou concessão de Restrição Celestial.',
@@ -263,7 +263,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['endurance.megumi'],
         name: 'Megumi Fushiguro',
         shortLabel: 'MEGUMI',
-        weight: 35,
+        weight: 26,
         color: '#91313a',
         description:
           'Fôlego para continuar se movendo, defendendo e buscando uma resposta sob desgaste. Megumi ainda participa do confronto com Hanami, mas é levado ao limite. A referência não permite absorver os golpes da maldição sem consequências.',
@@ -273,7 +273,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['endurance.panda'],
         name: 'Panda',
         shortLabel: 'PANDA',
-        weight: 25,
+        weight: 22,
         color: '#3d5663',
         description:
           'Capacidade de retomar a luta depois de impactos e manter o esforço sob pressão. Panda continua enfrentando Mechamaru após ser atingido. Seus núcleos influenciam essa continuidade; a comparação não concede núcleos extras, reparação ou regeneração.',
@@ -293,7 +293,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['endurance.yuji-goodwill'],
         name: 'Yuji Itadori',
         shortLabel: 'YUJI',
-        weight: 15,
+        weight: 18,
         color: '#66584e',
         description:
           'Capacidade de seguir trocando golpes e partir para novas investidas mesmo sob desgaste. Yuji continua no confronto com Todo e depois enfrenta Hanami. O resultado não inclui cura de Sukuna, regeneração ou resistência automática a técnicas.',
@@ -303,7 +303,7 @@ export const wheels: WheelDefinition[] = [
         reference: physicalReferences['endurance.hanami'],
         name: 'Hanami',
         shortLabel: 'HANAMI',
-        weight: 5,
+        weight: 14,
         color: '#6e3d3f',
         description:
           'Resistência para permanecer em combate após ofensivas sucessivas. Hanami enfrenta Megumi e Maki e depois continua contra Yuji e Todo. A cena envolve um corpo de maldição; o jogo usa sua persistência como referência, sem conceder regeneração ou imunidade.',
