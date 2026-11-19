@@ -27,6 +27,7 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 - Capítulo 2 — Condições especiais: somente humanos, após Linhagem.
 - Capítulo 3 — Atributos Físicos: Força física, Velocidade e Resistência para todas as naturezas.
 - Capítulo 4 — Reserva: energia amaldiçoada ou rolloluca, conforme a natureza.
+- Capítulo 5 — Técnicas: presença (humanos 80/20; espíritos 90/10) e, quando elegível, técnica específica. Percentuais de gameplay.
 - Sorteio ponderado, segmentos proporcionais e parada no centro do resultado.
 - Uma rolagem por atributo, revelação, progressão e ficha parcial.
 - Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato v3). Um giro é registrado antes da animação; recarregar revela o mesmo resultado. Partidas v1/v2 preservam os resultados: humanos sem atributos físicos passam pela nova roleta de nascimento; quando já havia atributos físicos, a condição fica explicitamente **não registrada**, sem sorteio retroativo. Fichas antigas concluídas retomam na reserva.
@@ -52,7 +53,21 @@ Humanos passam por Linhagem e Condição especial antes dos atributos físicos; 
 
 A escala de reserva é uma abstração comum de gameplay, com explicação específica para humanos, espíritos, corpos artificiais e rolloluca simuriana. Não representa equivalência biológica ou quantitativa entre naturezas. O termo rolloluca segue o briefing; detalhes de sua fisiologia não foram inferidos de wikis ou de capítulos indisponíveis. Yuta contextualiza grandes reservas no cap. 140, sem conceder Rika ou técnica. Os links para catálogos oficiais são referências de leitura, não transcrições desses capítulos.
 
-O [PR #1 de rebalanceamento](https://github.com/DiogoJP202/Custom-Character/pull/1) permanece pendente, sem merge ou adoção automática dos pesos. Os testes também exercitam as distribuições propostas nele para garantir compatibilidade.
+O [PR #1 de rebalanceamento](https://github.com/DiogoJP202/Custom-Character/pull/1) estava aberto na última consulta bem-sucedida. Nesta entrega, a consulta remota e o fetch do Git falharam por problemas de certificado HTTPS; seu estado atual não pôde ser confirmado. Nenhum merge ou mudança nos pesos anteriores foi feito. Os testes continuam exercitando as distribuições propostas para garantir compatibilidade.
+
+### Técnicas
+
+`src/data/techniques.ts` contém 11 opções humanas e três de espíritos, com funcionamento, personagem/fase, uso inicial, condições e feitos com indicação de fonte oficial. `eligibleTechniques` em `src/lib/conditions.ts` filtra natureza, linhagem e exigência de energia própria. Os mesmos pesos filtrados alimentam sorteio, segmentos e legenda; os pesos relativos não precisam somar 100.
+
+Gojo habilita Ilimitado; Zen’in, Dez Sombras/Projeção; Kamo, Sangue; Inumaki, Fala. As seis opções humanas restantes não exigem linhagem. Construção não é bloqueada por Zen’in; o exemplo de Yorozu não é usado para conceder suas aplicações avançadas. Cópia por Yuta e as constituições de Choso/Naoya não universalizam as respectivas heranças. Ilimitado não concede Seis Olhos ou aplicações plenas. Restrição completa pula o capítulo; parcial/energia muito baixa mantêm a técnica como capacidade existente, sem garantir energia para utilizá-la. Kokichi não recebe Marionetes automaticamente nem tem seu corpo reparado.
+
+Cadáveres independentes e simurianos pulam as duas roletas; a ficha explica a constituição artificial ou a ausência de catálogo simuriano, sem declarar incapacidade canônica. Não há distribuição de técnicas humanas para essas naturezas. Nenhum núcleo extra de Panda é concedido.
+
+Partidas v3 concluídas retomam nas novas etapas elegíveis, mantendo o formato e os resultados anteriores. Saves v1/v2 continuam sendo validados pelo catálogo histórico de Origem/Físico e migrados. As regras de retry de desenvolvimento apagam a técnica ao repetir sua etapa ou a presença.
+
+**Limite de verificação desta entrega:** os acessos ao site oficial, VIZ, GitHub e busca falharam por certificado/transporte, inclusive no navegador. As fontes de episódios abaixo são indicações de leitura e as descrições são conservadoras; a conferência online atualizada permanece pendente. Cópia foi deixada fora até conferir suas condições de aquisição/armazenamento sem conceder Rika; Dagon, até separar invocações demonstradas em domínio de uma aplicação inicial sem domínio. Modulo continua sem catálogo de habilidades por falta de fundamentação suficiente. Jogo/Hanami usam rótulos descritivos, sem afirmar nomes oficiais não confirmados.
+
+Referências de leitura das técnicas: episódios 1 (Cães Divinos), 7 (Gojo/Jogo), 10 (Nanami/Mahito), 16 (Mechamaru), 17 (Construção), 18 (Sangue), 19 (Fala/Hanami), 20 (Boogie Woogie), 24 (Boneco de Palha), 38 (Projeção) e JJK 0, capítulo 4/filme (Geto). Os links correspondentes ficam nos resultados. Não há reprodução de imagens ou textos desses materiais.
 
 `src/lib/wheel.ts` concentra a geometria e o sorteio. `src/lib/game.ts` controla estados e persistência. Os componentes `Wheel`, `ResultReveal` e `CharacterSheet` apresentam o jogo; `App` conecta as interações.
 

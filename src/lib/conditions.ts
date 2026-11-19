@@ -5,6 +5,7 @@ import {
   type WheelDefinition,
   type WheelOption,
 } from '../data/wheels.ts';
+import { techniques, spiritTechniquePresence } from '../data/techniques.ts';
 
 export interface RuleContext {
   results: Record<string, string>;
@@ -15,9 +16,26 @@ export function birthCondition(state: RuleContext) {
   return state.results.nature === 'human' ? state.results['birth-condition'] : undefined;
 }
 
+export function eligibleTechniques(state: RuleContext): WheelOption[] {
+  const { nature, lineage } = state.results;
+  const energyAbsent = birthCondition(state) === 'physical-complete';
+  return techniques.filter(
+    ({ technique }) =>
+      technique &&
+      technique.nature === nature &&
+      (!technique.lineage || technique.lineage === lineage) &&
+      (!technique.requiresOwnEnergy || !energyAbsent),
+  );
+}
+
 export function isStageAvailable(wheel: WheelDefinition, state: RuleContext): boolean {
   if (wheel.id === 'birth-condition' && state.legacyBirth) return false;
   if (wheel.id === 'energy-reserve' && birthCondition(state) === 'physical-complete') return false;
+  if (
+    ['technique-presence', 'innate-technique'].includes(wheel.id) &&
+    !eligibleTechniques(state).length
+  )
+    return false;
   return isWheelAvailable(wheel, state.results);
 }
 
@@ -49,6 +67,16 @@ export function physicalAdjustment(stepId: string, state: RuleContext): WheelOpt
 }
 
 export function playableWheel(wheel: WheelDefinition, state: RuleContext): WheelDefinition {
+  if (wheel.id === 'technique-presence')
+    return {
+      ...wheel,
+      description:
+        state.results.nature === 'cursed-spirit'
+          ? 'Sorteie a presença de uma técnica no catálogo de espíritos. Distribuição própria do jogo: 90% possui, 10% não possui.'
+          : wheel.description,
+      options: state.results.nature === 'cursed-spirit' ? spiritTechniquePresence : wheel.options,
+    };
+  if (wheel.id === 'innate-technique') return { ...wheel, options: eligibleTechniques(state) };
   if (wheel.id !== 'energy-reserve') return wheel;
   const partial = birthCondition(state) === 'physical-partial';
   const simurian = state.results.nature === 'simurian';
@@ -65,7 +93,10 @@ export function playableWheel(wheel: WheelDefinition, state: RuleContext): Wheel
 }
 
 export function resultDetails(stepId: string, state: RuleContext): WheelOption | undefined {
-  const option = getOption(stepId, state.results[stepId]);
+  const definition = wheels.find((wheel) => wheel.id === stepId);
+  const option =
+    definition &&
+    playableWheel(definition, state).options.find((option) => option.id === state.results[stepId]);
   if (!option) return automaticOutcome(stepId, state);
   const adjustment = physicalAdjustment(stepId, state);
   if (adjustment)
@@ -75,6 +106,30 @@ export function resultDetails(stepId: string, state: RuleContext): WheelOption |
       description: adjustment.description,
       notes: `Referência sorteada: ${option.name}. Descrição original para consulta: ${option.description} A capacidade efetiva acima prevalece sobre essa comparação.`,
     };
+  if (option.technique) {
+    const lineage = option.technique.lineage;
+    const lowEnergy = state.results['energy-reserve'] === 'very-low';
+    const partial = birthCondition(state) === 'physical-partial';
+    const limitedBody = birthCondition(state) === 'body-limited';
+    return {
+      ...option,
+      notes: [
+        lineage
+          ? `É elegível pela linhagem registrada (${getOption('lineage', lineage)?.name}). O clã permite participar do sorteio; não garante esta técnica.`
+          : 'Opção sem requisito de linhagem neste catálogo. Sua atribuição é uma combinação de gameplay, não uma frequência oficial.',
+        partial
+          ? 'Energia residual: a técnica é registrada como capacidade existente, mas sua aplicação não é garantida por este estoque. Não concede energia adicional nem remove a Restrição Celestial.'
+          : lowEnergy
+            ? 'A reserva registrada limita as aplicações possíveis. Receber a técnica não aumenta o estoque nem garante um uso contínuo.'
+            : 'Reserva, controle e domínio da técnica são atributos distintos. O estoque sorteado não concede perícia.',
+        limitedBody
+          ? 'O corpo continua extremamente debilitado. A técnica não remove essa condição nem concede marionetes, equipamentos ou capacidade física extra.'
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+    };
+  }
   if (stepId !== 'energy-reserve') return option;
   const nature = state.results.nature;
   const context =
@@ -116,6 +171,42 @@ export function resultDetails(stepId: string, state: RuleContext): WheelOption |
 }
 
 export function automaticOutcome(stepId: string, state: RuleContext): WheelOption | undefined {
+  if (stepId === 'technique-presence') {
+    const base = { id: 'not-rolled', shortLabel: 'NÃO SORTEADA', weight: 1, color: '#3d5663' };
+    if (birthCondition(state) === 'physical-complete')
+      return {
+        ...base,
+        name: 'Etapa bloqueada — energia própria ausente',
+        description:
+          'A Restrição Celestial completa impede este sorteio de técnicas que exigem energia própria. Nenhuma técnica foi atribuída. Isso não impede treinamento ou ferramentas que possam ser utilizadas sem essa energia.',
+      };
+    if (state.results.nature === 'independent-cursed-corpse')
+      return {
+        ...base,
+        name: 'Constituição artificial — sem catálogo de técnicas',
+        description:
+          'Seu corpo artificial independente permanece registrado. Panda é um exemplo de constituição com núcleos; isso não torna seus núcleos ou formas uma técnica inata universal, e não atribui núcleos extras ao personagem. Esta versão não sorteia técnicas humanas para essa natureza; isso não é uma incapacidade definitiva do cânone.',
+        sources: [
+          {
+            label: 'Anime · episódio 16 (Panda e Mechamaru)',
+            url: 'https://jujutsukaisen.jp/episodes/16.php',
+          },
+        ],
+      };
+    if (state.results.nature === 'simurian')
+      return {
+        ...base,
+        name: 'Catálogo simuriano ainda não disponível',
+        description:
+          'A reserva de rolloluca permanece. Esta versão ainda não tem um catálogo fundamentado de habilidades simurianas para sortear, portanto não atribui técnicas humanas. A ausência de opções no jogo não significa ausência de habilidades no cânone.',
+        sources: [
+          {
+            label: 'Jujutsu Kaisen Modulo · catálogo oficial',
+            url: 'https://www.viz.com/shonenjump/chapters/jujutsu-kaisen-modulo',
+          },
+        ],
+      };
+  }
   if (stepId === 'energy-reserve' && birthCondition(state) === 'physical-complete')
     return {
       id: 'absent',

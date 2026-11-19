@@ -90,6 +90,8 @@ test('all human birth conditions affect final physical capacities without erasin
         assert.strictEqual(gameReducer(state, { type: 'spin', optionId: 'immense' }), state);
       } else assert.equal(effective.options.length, 5);
       state = commit(state, condition === 'physical-partial' ? 'very-low' : 'immense');
+      assert.equal(state.stepId, 'technique-presence');
+      state = commit(state, 'no');
       assert.equal(state.phase, 'complete');
       if (condition === 'body-limited') {
         assert.match(resultDetails('energy-reserve', state)!.description, /não altera o estoque/);
@@ -109,7 +111,10 @@ test('nonhuman energy uses each nature, including rolloluca, with no human birth
     let state = commit(gameReducer(initialState, { type: 'start' }), nature);
     assert.equal(state.stepId, 'strength');
     assert.equal(
-      isStageAvailable(wheels.find((wheel) => wheel.id === 'birth-condition')!, state),
+      isStageAvailable(
+        wheels.find((wheel) => wheel.id === 'birth-condition')!,
+        state,
+      ),
       false,
     );
     for (const stepId of ['strength', 'speed', 'endurance']) {
@@ -118,12 +123,18 @@ test('nonhuman energy uses each nature, including rolloluca, with no human birth
     }
     for (const option of wheels.find((wheel) => wheel.id === 'energy-reserve')!.options) {
       const complete = commit(state, option.id);
-      assert.equal(complete.phase, 'complete');
+      assert.equal(complete.phase, nature === 'cursed-spirit' ? 'ready' : 'complete');
       assert.match(resultDetails('energy-reserve', complete)!.description, term);
       assert.equal(complete.results['birth-condition'], undefined);
     }
     if (nature === 'simurian')
-      assert.equal(playableWheel(wheels.at(-1)!, state).name, 'Reserva de rolloluca');
+      assert.equal(
+        playableWheel(
+          wheels.find((wheel) => wheel.id === 'energy-reserve')!,
+          state,
+        ).name,
+        'Reserva de rolloluca',
+      );
   }
 });
 
@@ -150,7 +161,7 @@ test('all old flow phases migrate idempotently, without random birth conditions 
   for (const nature of wheels[0].options.map((option) => option.id)) {
     const path = wheels.filter(
       (wheel) =>
-        !['birth-condition', 'energy-reserve'].includes(wheel.id) &&
+        ['origin', 'physical'].includes(wheel.chapterId) &&
         (!wheel.availableWhen || nature === 'human'),
     );
     const results: Record<string, string> = {};
@@ -230,6 +241,7 @@ test('new weights, one-option energy and the pending PR distributions keep odds,
   for (const condition of ['none', 'physical-partial', 'physical-complete', 'body-limited']) {
     const state = born(condition);
     for (const wheel of wheels) {
+      if (!isStageAvailable(wheel, state)) continue;
       const options = playableWheel(
         {
           ...wheel,

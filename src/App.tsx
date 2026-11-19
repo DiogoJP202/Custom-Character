@@ -191,7 +191,7 @@ export default function App() {
                     </button>
                     <p className="secondary-note">
                       {isIntro
-                        ? 'Origem, condição especial, atributos físicos e energia.'
+                        ? 'Origem, condição especial, atributos físicos, energia e técnica.'
                         : testMode
                           ? 'Modo de teste: novos giros estão liberados.'
                           : 'O resultado não pode ser alterado.'}

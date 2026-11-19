@@ -13,6 +13,7 @@ function ResultContent({
   headingRef?: Ref<HTMLHeadingElement>;
 }) {
   const reference = result.reference;
+  const isTechnique = !!result.technique;
   const representativeFeat = reference?.feats[0];
   return (
     <>
@@ -34,6 +35,7 @@ function ResultContent({
           {reference && (
             <p className="reference-version">
               {result.adjustment && 'Referência sorteada · '}
+              {reference.character && `${reference.character} · `}
               {reference.version}
             </p>
           )}
@@ -41,16 +43,24 @@ function ResultContent({
       </header>
       <div className={`result-body ${reference ? '' : 'simple-result'}`}>
         <section className="practical-description">
-          <h3>{reference ? 'No seu personagem' : 'Descrição'}</h3>
+          <h3>{isTechnique ? 'Como funciona' : reference ? 'No seu personagem' : 'Descrição'}</h3>
           {result.adjustment && <p className="result-adjustment">{result.adjustment.label}</p>}
           <p>{result.description}</p>
           {reference && (
             <p className="comparison-note">
-              Interpretação para o jogo, não uma equivalência exata.
+              {isTechnique
+                ? 'Receber a técnica não concede o domínio demonstrado pelo personagem.'
+                : 'Interpretação para o jogo, não uma equivalência exata.'}
             </p>
           )}
         </section>
-        {representativeFeat && !result.adjustment && (
+        {reference?.initialUse && (
+          <section className="representative-feat">
+            <h3>Uso inicial</h3>
+            <p>{reference.initialUse}</p>
+          </section>
+        )}
+        {representativeFeat && !result.adjustment && !isTechnique && (
           <section className="representative-feat" aria-label="Feito representativo">
             <h3>Na obra</h3>
             <p>{representativeFeat.description}</p>
@@ -103,11 +113,18 @@ function ResultContent({
                     <p>{reference.limitations}</p>
                   </section>
                   <p className="reference-disclaimer">
-                    A aplicação deste desempenho ao seu personagem é uma abstração do jogo, não uma
-                    classificação oficial. As cenas podem incluir reforço de energia amaldiçoada,
-                    armas e técnicas; a obra não fornece uma medida isolada do corpo. Este resultado
-                    não concede esses recursos. Os links levam às sinopses oficiais dos episódios;
-                    elas resumem o confronto, sem descrever cada movimento.
+                    {isTechnique ? (
+                      'O sorteio atribui a técnica, não o domínio de suas aplicações. Não concede equipamentos, treinamento, expansões de domínio ou aplicações reversas. Os links indicam referências oficiais de leitura; suas sinopses não descrevem todas as condições de uso.'
+                    ) : (
+                      <>
+                        A aplicação deste desempenho ao seu personagem é uma abstração do jogo, não
+                        uma classificação oficial. As cenas podem incluir reforço de energia
+                        amaldiçoada, armas e técnicas; a obra não fornece uma medida isolada do
+                        corpo. Este resultado não concede esses recursos. Os links levam às sinopses
+                        oficiais dos episódios; elas resumem o confronto, sem descrever cada
+                        movimento.
+                      </>
+                    )}
                   </p>
                 </>
               )}

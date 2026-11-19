@@ -10,6 +10,8 @@ export interface ReferenceFeat {
 }
 
 export interface CharacterReference {
+  character?: string;
+  initialUse?: string;
   version: string;
   feats: ReferenceFeat[];
   limitations: string;

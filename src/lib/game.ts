@@ -134,7 +134,7 @@ export function parseSavedGame(raw: string | null): GameState {
       ...(legacyBirth ? { legacyBirth: true as const } : {}),
     };
     const catalog = oldFlow
-      ? wheels.filter((wheel) => !['birth-condition', 'energy-reserve'].includes(wheel.id))
+      ? wheels.filter((wheel) => ['origin', 'physical'].includes(wheel.chapterId))
       : wheels;
     if (oldFlow && entries.some(([id]) => !catalog.some((wheel) => wheel.id === id)))
       return initialState;

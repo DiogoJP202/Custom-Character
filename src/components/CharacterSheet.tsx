@@ -38,7 +38,12 @@ export default function CharacterSheet({
           </h3>
           <dl className="sheet-attributes">
             {wheels
-              .filter((wheel) => wheel.chapterId === chapter.id)
+              .filter(
+                (wheel) =>
+                  wheel.chapterId === chapter.id &&
+                  (wheel.id !== 'innate-technique' ||
+                    visibleResults['technique-presence'] === 'yes'),
+              )
               .map((wheel) => {
                 const displayWheel = wheelForStep(wheel.id, visibleState)!;
                 const result = resultDetails(wheel.id, visibleState);

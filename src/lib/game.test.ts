@@ -10,6 +10,7 @@ import {
   STORAGE_KEY,
 } from './game.ts';
 import type { GameState } from './game.ts';
+import { playableWheel } from './conditions.ts';
 
 function roll(state: GameState, optionId: string): GameState {
   return gameReducer(gameReducer(state, { type: 'spin', optionId }), { type: 'reveal' });
@@ -31,6 +32,8 @@ function finishPhysical(state: GameState): GameState {
     assert.equal(state.phase, 'revealed');
     state = gameReducer(state, { type: 'continue' });
   }
+  if (state.stepId === 'technique-presence')
+    state = gameReducer(roll(state, 'no'), { type: 'continue' });
   return state;
 }
 
@@ -45,7 +48,7 @@ test('every human lineage passes birth conditions, physical attributes and energ
     });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(Object.keys(complete.results).length, 7);
+    assert.equal(Object.keys(complete.results).length, 8);
     assert.equal(complete.results.lineage, lineage.id);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
     assert.deepEqual(gameReducer(complete, { type: 'reset' }), { ...initialState, phase: 'ready' });
@@ -58,8 +61,11 @@ test('all nonhuman natures skip lineage and birth and finish physical attributes
     assert.deepEqual(chapterTwo.results, { nature });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(complete.stepId, 'energy-reserve');
-    assert.equal(Object.keys(complete.results).length, 5);
+    assert.equal(
+      complete.stepId,
+      nature === 'cursed-spirit' ? 'technique-presence' : 'energy-reserve',
+    );
+    assert.equal(Object.keys(complete.results).length, nature === 'cursed-spirit' ? 6 : 5);
     assert.equal(complete.results.lineage, undefined);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
   }
@@ -83,7 +89,10 @@ test('chapter and step indicators follow the catalog and conditional lineage', (
 test('each stage requires a spin, a reveal and an explicit continuation; duplicate actions are inert', () => {
   let state = gameReducer(initialState, { type: 'start' });
   while (state.phase !== 'complete') {
-    const wheel = wheels.find((entry) => entry.id === state.stepId)!;
+    const wheel = playableWheel(
+      wheels.find((entry) => entry.id === state.stepId)!,
+      state,
+    );
     assert.strictEqual(gameReducer(state, { type: 'continue' }), state);
     assert.strictEqual(gameReducer(state, { type: 'spin', optionId: 'invalid' }), state);
     const spinning = gameReducer(state, { type: 'spin', optionId: wheel.options[0].id });
@@ -112,7 +121,10 @@ test('all phases of human and nonhuman games restore; interrupted spins reveal t
     let state = gameReducer(initialState, { type: 'start' });
     assert.deepEqual(parseSavedGame(JSON.stringify(state)), state);
     while (state.phase !== 'complete') {
-      const wheel = wheels.find((entry) => entry.id === state.stepId)!;
+      const wheel = playableWheel(
+        wheels.find((entry) => entry.id === state.stepId)!,
+        state,
+      );
       const optionId = wheel.id === 'nature' ? nature.id : wheel.options.at(-1)!.id;
       const spinning = gameReducer(state, { type: 'spin', optionId });
       const restored = parseSavedGame(JSON.stringify(spinning));

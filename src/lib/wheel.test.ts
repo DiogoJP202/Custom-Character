@@ -49,7 +49,8 @@ test('a stratified sample gives exactly the configured percentages without flaky
       const result = pickOption(wheel.options, () => (index + 0.5) / 10000);
       counts[result.id] = (counts[result.id] ?? 0) + 1;
     }
-    for (const option of wheel.options) assert.equal(counts[option.id], option.weight * 100);
+    for (const { option, probability } of getSegments(wheel.options))
+      assert.ok(Math.abs(counts[option.id] - probability * 10000) <= 1);
   }
 });
 

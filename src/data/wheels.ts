@@ -1,12 +1,14 @@
 import { physicalReferences, type CharacterReference } from './references.ts';
 import type { ReferenceSource } from './references.ts';
 import { birthOptions, energyOptions, energyNotes } from './special.ts';
+import { techniques, humanTechniquePresence } from './techniques.ts';
 
 export const chapters = [
   { id: 'origin', name: 'Origem', hubLabel: 'ORIGEM' },
   { id: 'birth', name: 'Condições especiais', hubLabel: 'CONDIÇÃO' },
   { id: 'physical', name: 'Atributos físicos', hubLabel: 'FÍSICO' },
   { id: 'energy', name: 'Energia', hubLabel: 'ENERGIA' },
+  { id: 'techniques', name: 'Técnicas amaldiçoadas', hubLabel: 'TÉCNICA' },
 ] as const;
 
 export interface WheelOption {
@@ -19,6 +21,7 @@ export interface WheelOption {
   reference?: CharacterReference;
   notes?: string;
   sources?: ReferenceSource[];
+  technique?: { nature: 'human' | 'cursed-spirit'; lineage?: string; requiresOwnEnergy: boolean };
   adjustment?: {
     capacity: 'enhanced' | 'extraordinary' | 'severely-limited';
     label: string;
@@ -336,6 +339,23 @@ export const wheels: WheelDefinition[] = [
     name: 'Reserva de energia amaldiçoada',
     description: 'Sorteie a quantidade de energia disponível, sem definir controle ou output.',
     options: energyOptions.map((option) => ({ ...option, notes: energyNotes })),
+  },
+  {
+    id: 'technique-presence',
+    chapterId: 'techniques',
+    name: 'Possui técnica inata?',
+    description:
+      'Sorteie a presença de uma técnica. A linhagem não garante uma técnica hereditária.',
+    options: humanTechniquePresence,
+  },
+  {
+    id: 'innate-technique',
+    chapterId: 'techniques',
+    name: 'Técnica inata',
+    description: 'Sorteie uma técnica entre as opções compatíveis com este personagem.',
+    availableWhen: { stepId: 'technique-presence', optionId: 'yes' },
+    unavailableLabel: 'Sem técnica sorteada',
+    options: techniques,
   },
 ];
 
