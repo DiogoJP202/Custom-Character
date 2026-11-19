@@ -1,4 +1,4 @@
-# Jujutsu — Character Spinner
+# Custom Character — Jujutsu Kaisen
 
 Pequeno jogo de criação de personagens de Jujutsu Kaisen. React + TypeScript + Vite e CSS puro, sem backend, login, fontes remotas ou APIs externas.
 
@@ -41,11 +41,13 @@ Natureza: Humano 70, Espírito amaldiçoado 20, Cadáver amaldiçoado independen
 
 Linhagem: Sem clã conhecido 70, Gojo 5, Zen’in 10, Kamo 10, Inumaki 5.
 
-`chapters` define os títulos e os símbolos dos capítulos. Cada roleta aponta para um `chapterId`, contém suas opções e pode ter `availableWhen: { stepId, optionId }`. Cada resultado mantém identificador, nome, descrição, rótulo, peso e cor. A ordem do catálogo determina o fluxo e a validação de partidas, sem listas fixas de etapas em `game.ts`.
+`chapters` define os títulos dos capítulos. Cada roleta aponta para um `chapterId`, contém suas opções e pode ter `availableWhen: { stepId, optionId }`. Cada resultado mantém identificador, nome, descrição, rótulo, peso e cor. Referências físicas em `src/data/references.ts` acrescentam versão, feitos com contexto e fontes e limites da comparação. A ordem do catálogo determina o fluxo e a validação de partidas.
 
 Todos avançam de Origem para Atributos Físicos; somente humanos giram Linhagem. Cada atributo exige giro manual, revelação e Continuar. Segmentos menores que 10% usam marcadores numéricos maiores, correspondentes à legenda, sem alterar sua área. Alterações incompatíveis nos identificadores exigem uma migração explícita do salvamento.
 
 `src/lib/wheel.ts` concentra a geometria e o sorteio. `src/lib/game.ts` controla estados e persistência. Os componentes `Wheel`, `ResultReveal` e `CharacterSheet` apresentam o jogo; `App` conecta as interações.
+
+Os detalhes de qualquer resultado podem ser reabertos pela ficha, sem novo sorteio. A apresentação é tipográfica, sem artes oficiais ou hotlink. Barlow Condensed e IBM Plex Sans são servidas localmente; suas licenças OFL estão em `public/fonts/`.
 
 ## Referências e limites de cânone
 

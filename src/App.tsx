@@ -2,12 +2,13 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { getOption, getWheelProgress, wheels } from './data/wheels.ts';
 import { gameReducer, loadGame, saveGame } from './lib/game.ts';
 import { getSegments, pickOption, SMALL_SEGMENT_THRESHOLD } from './lib/wheel.ts';
-import Wheel, { Sigil } from './components/Wheel.tsx';
+import Wheel from './components/Wheel.tsx';
 import CharacterSheet from './components/CharacterSheet.tsx';
-import ResultReveal from './components/ResultReveal.tsx';
+import ResultReveal, { ResultDialog } from './components/ResultReveal.tsx';
 
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, loadGame);
+  const [inspectedStep, setInspectedStep] = useState<string | null>(null);
   const [reducedMotion, setReducedMotion] = useState(
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
@@ -27,6 +28,10 @@ export default function App() {
   );
   const chapterLabel = String(chapterNumber).padStart(2, '0');
   const isIntro = state.phase === 'intro';
+  const segments = getSegments(wheel.options);
+  const inspectedWheel = wheels.find(({ id }) => id === inspectedStep);
+  const inspectedResult =
+    inspectedWheel && getOption(inspectedWheel.id, revealedResults[inspectedWheel.id]);
   const completeSpin = useCallback(() => dispatch({ type: 'reveal' }), []);
 
   useEffect(() => {
@@ -51,8 +56,7 @@ export default function App() {
     if (state.phase !== 'ready' || spinLock.current || state.results[state.stepId]) return;
     spinLock.current = true;
     const option = pickOption(wheel.options);
-    const nextState = gameReducer(state, { type: 'spin', optionId: option.id });
-    saveGame(nextState); // Commit before animation or a possible reload.
+    saveGame(gameReducer(state, { type: 'spin', optionId: option.id }));
     dispatch({ type: 'spin', optionId: option.id });
   }
 
@@ -62,82 +66,47 @@ export default function App() {
         Pular para o jogo
       </a>
       <header className="site-header">
-        <div className="brand">
-          <Sigil />
-          <div>
-            <span className="brand-name">JUJUTSU</span>
-            <span className="brand-subtitle">CHARACTER SPINNER</span>
-          </div>
+        <div className="brand" aria-label="Custom Character">
+          <span className="brand-mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span className="brand-name">
+            CUSTOM<span>CHARACTER</span>
+          </span>
         </div>
-        <div className="header-note">
-          <span className="tiny-star" aria-hidden="true">
-            ✦
-          </span>{' '}
-          Uma criação do acaso
-        </div>
-        <span className="edition">
-          VOL. {chapterLabel} <span>/</span> {chapter.hubLabel}
-        </span>
+        <p className="header-context">
+          JUJUTSU KAISEN <span>FAN GAME</span>
+        </p>
+        <span className="header-edition">CRIADOR DE PERSONAGENS</span>
       </header>
-      <main id="game" className={`game-layout ${terminal ? 'terminal-layout' : ''}`}>
+      <main id="game" className="game-layout">
         <section className="play-area" aria-labelledby="game-title">
           <div className="chapter-indicator">
-            <span className="chapter-dot" />
-            <span>CAPÍTULO {chapterLabel}</span>
-            <span className="indicator-slash">/</span>
-            <span>{chapter.name.toLocaleUpperCase('pt-BR')}</span>
+            <span>
+              Capítulo {chapterLabel} <span aria-hidden="true">—</span> {chapter.name}
+            </span>
             <span className="step-indicator">
-              {terminal
-                ? 'FIM DE CAPÍTULO'
-                : `ETAPA ${String(stepNumber).padStart(2, '0')} DE ${String(totalSteps).padStart(2, '0')} · ${wheel.name.toLocaleUpperCase('pt-BR')}`}
+              {terminal ? 'Concluído' : `Etapa ${stepNumber} / ${totalSteps}`}
             </span>
           </div>
           <div className="game-heading">
-            <span className="eyebrow">
-              {isIntro
-                ? 'Jujutsu Kaisen · Criação de personagem'
-                : terminal
-                  ? 'Registro da sua criação'
-                  : 'O acaso decide'}
-            </span>
             <h1 id="game-title" ref={heading} tabIndex={-1}>
-              {state.phase === 'complete' ? (
-                <>
-                  <span className="heading-lead">Sua história</span> <em>começa aqui.</em>
-                </>
-              ) : (
-                <>
-                  <span className="heading-lead">{wheel.title}</span> <em>{wheel.titleAccent}</em>
-                </>
-              )}
+              {terminal ? 'Criação concluída' : wheel.name}
             </h1>
-            <p>
-              {isIntro
-                ? 'Gire as roletas. Descubra sua origem. Crie um personagem.'
-                : terminal
-                  ? 'As roletas disponíveis terminaram. Esta é a sua ficha parcial.'
-                  : wheel.description}
-            </p>
+            <p>{terminal ? 'Consulte os resultados na ficha do personagem.' : wheel.description}</p>
           </div>
           {terminal ? (
-            <div className="end-screen">
-              <div className="end-mark">
-                <Sigil />
-              </div>
-              <span className="eyebrow">Capítulo {chapterNumber} concluído</span>
-              <h2>Ficha parcial registrada</h2>
-              <p>
-                Os resultados dos capítulos disponíveis estão registrados. Os próximos capítulos
-                ainda estão por vir.
-              </p>
+            <section className="completion-panel" aria-label="Criação concluída">
+              <span className="completion-label">Ficha parcial</span>
+              <h2>Todos os resultados registrados.</h2>
+              <p>Selecione um atributo na ficha para consultar sua explicação e referências.</p>
               <button className="button button-primary" onClick={() => dispatch({ type: 'reset' })}>
-                Iniciar nova criação
-                <span aria-hidden="true">✦</span>
+                Criar outro personagem
               </button>
-              {state.phase === 'complete' && (
-                <span className="restart-note">Uma nova criação apaga os resultados atuais.</span>
-              )}
-            </div>
+              <p className="secondary-note">Substitui a ficha atual.</p>
+            </section>
           ) : (
             <>
               <Wheel
@@ -149,78 +118,100 @@ export default function App() {
                 onComplete={completeSpin}
               />
               <div className="wheel-interaction">
-                <div className="live-status" role="status" aria-live="polite">
+                <p className="live-status" role="status" aria-live="polite">
                   {state.phase === 'spinning'
-                    ? 'A roleta está girando…'
+                    ? 'Girando…'
                     : state.phase === 'revealed'
                       ? `Resultado: ${result?.name}`
                       : '\u00a0'}
-                </div>
-                {state.phase === 'revealed' && result ? (
-                  <ResultReveal result={result} onContinue={() => dispatch({ type: 'continue' })} />
-                ) : (
+                </p>
+                {state.phase !== 'revealed' && (
                   <>
                     <button
                       className="button button-primary spin-button"
                       disabled={state.phase === 'spinning'}
                       onClick={isIntro ? () => dispatch({ type: 'start' }) : spin}
+                      aria-label={
+                        isIntro
+                          ? 'Criar personagem'
+                          : state.phase === 'spinning'
+                            ? 'Girando roleta'
+                            : `Girar roleta de ${wheel.name}`
+                      }
                     >
-                      <span aria-hidden="true">{state.phase === 'spinning' ? '◌' : '✦'}</span>
                       {isIntro
-                        ? 'Iniciar criação'
+                        ? 'Criar personagem'
                         : state.phase === 'spinning'
-                          ? 'Revelando resultado…'
-                          : `Girar ${wheel.name.toLocaleLowerCase('pt-BR')}`}
+                          ? 'Girando…'
+                          : 'Girar roleta'}
                     </button>
-                    <p className="interaction-note">
+                    <p className="secondary-note">
                       {isIntro
-                        ? 'Tudo começa com um giro.'
-                        : 'Um giro. Um resultado. Sem voltar atrás.'}
+                        ? 'Origem, linhagem e atributos físicos.'
+                        : 'O resultado não pode ser alterado.'}
                     </p>
                   </>
                 )}
               </div>
-              <div className="wheel-legend" aria-label="Resultados e probabilidades">
-                {getSegments(wheel.options).map(({ option, probability }, index) => (
-                  <div className="legend-item" key={option.id}>
-                    <span className="legend-swatch" style={{ background: option.color }} />
-                    <span className="legend-name">{option.name}</span>
-                    <span className="legend-percentage">
-                      {new Intl.NumberFormat('pt-BR', {
-                        style: 'percent',
-                        maximumFractionDigits: 2,
-                      }).format(probability)}
-                    </span>
-                    {probability < SMALL_SEGMENT_THRESHOLD && (
-                      <span className="legend-index" aria-label={`Marcador ${index + 1} na roleta`}>
+              {state.phase === 'revealed' && result && (
+                <ResultReveal
+                  attribute={wheel.name}
+                  result={result}
+                  focusOnMount={!inspectedResult}
+                  onContinue={() => dispatch({ type: 'continue' })}
+                />
+              )}
+              <details className="probabilities" key={`probabilities-${wheel.id}`}>
+                <summary>
+                  Resultados e probabilidades <span>{segments.length} opções</span>
+                </summary>
+                <ol className="wheel-legend">
+                  {segments.map(({ option, probability }, index) => (
+                    <li className="legend-item" key={option.id}>
+                      <span
+                        className="legend-marker"
+                        style={{ backgroundColor: option.color }}
+                        aria-label={
+                          probability < SMALL_SEGMENT_THRESHOLD
+                            ? `Marcador ${index + 1} na roleta`
+                            : undefined
+                        }
+                      >
                         {index + 1}
                       </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="probability-note">
-                {chapter.id === 'physical'
-                  ? 'Referências e probabilidades são abstrações do jogo, não classificações oficiais. Não concedem técnicas ou poderes.'
-                  : 'Probabilidades de gameplay. Não representam frequências oficiais da obra.'}
-                {getSegments(wheel.options).some(
-                  ({ probability }) => probability < SMALL_SEGMENT_THRESHOLD,
-                ) && ' Os números identificam os segmentos menores na legenda.'}
-              </p>
+                      <span className="legend-name">{option.name}</span>
+                      <span className="legend-percentage">
+                        {new Intl.NumberFormat('pt-BR', {
+                          style: 'percent',
+                          maximumFractionDigits: 2,
+                        }).format(probability)}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+                <p className="probability-note">
+                  Os pesos são escolhas do jogo, não frequências ou classificações oficiais. Os
+                  números identificam os segmentos na roleta.
+                </p>
+              </details>
             </>
           )}
         </section>
-        <CharacterSheet state={state} />
+        <CharacterSheet state={state} onInspect={setInspectedStep} />
       </main>
       <footer className="site-footer">
         <span>
-          JUJUTSU KAISEN <span className="footer-divider">/</span> FAN PROJECT
+          Custom Character <span aria-hidden="true">/</span> Jujutsu Kaisen
         </span>
-        <p>Personagem original. Universo de Gege Akutami.</p>
-        <span>
-          FEITO PARA O ACASO <span aria-hidden="true">✦</span>
-        </span>
+        <p>Projeto de fãs, sem vínculo oficial. Universo de Gege Akutami.</p>
       </footer>
+      {inspectedWheel && inspectedResult && (
+        <ResultDialog
+          attribute={inspectedWheel.name}
+          result={inspectedResult}
+          onClose={() => setInspectedStep(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,44 +1,39 @@
-import { chapters, getOption, getWheelProgress, isWheelAvailable, wheels } from '../data/wheels.ts';
+import { chapters, getOption, isWheelAvailable, wheels } from '../data/wheels.ts';
 import type { GameState } from '../lib/game.ts';
-import { Sigil } from './Wheel.tsx';
 
-export default function CharacterSheet({ state }: { state: GameState }) {
+export default function CharacterSheet({
+  state,
+  onInspect,
+}: {
+  state: GameState;
+  onInspect: (stepId: string) => void;
+}) {
   const visibleResults =
     state.phase === 'spinning'
       ? Object.fromEntries(Object.entries(state.results).filter(([step]) => step !== state.stepId))
       : state.results;
   const count = Object.keys(visibleResults).length;
-  const currentWheel = wheels.find(({ id }) => id === state.stepId)!;
-  const { chapterNumber } = getWheelProgress(currentWheel, state.results);
   return (
-    <aside
-      className={`character-sheet ${state.phase === 'complete' ? 'sheet-complete' : ''}`}
-      aria-labelledby="sheet-title"
-    >
+    <aside className="character-sheet" aria-labelledby="sheet-title">
       <div className="sheet-header">
-        <span className="eyebrow">Registro de personagem</span>
-        <span className="sheet-number">JJK / 001</span>
+        <span>Registro do personagem</span>
+        <span className="sheet-status">
+          {state.phase === 'complete' ? 'Concluído' : 'Em criação'}
+        </span>
       </div>
-      <div className="sheet-emblem">
-        <Sigil />
-        <span>{state.phase === 'complete' ? 'CRIAÇÃO REGISTRADA' : 'IDENTIDADE EM FORMAÇÃO'}</span>
-      </div>
-      <div className="sheet-title-row">
-        <h2 id="sheet-title">Sua ficha</h2>
-        <span className="sheet-tag">PARCIAL</span>
-      </div>
-      <p className="sheet-intro">Uma origem. Muitas possibilidades.</p>
+      <h2 id="sheet-title">
+        <span>Ficha do</span> personagem
+      </h2>
       {chapters.map((chapter, index) => (
         <section
           className="sheet-chapter-group"
           key={chapter.id}
           aria-labelledby={`sheet-${chapter.id}`}
         >
-          <div className="sheet-chapter">
+          <h3 id={`sheet-${chapter.id}`} className="sheet-chapter">
             <span>{String(index + 1).padStart(2, '0')}</span>
-            <h3 id={`sheet-${chapter.id}`}>{chapter.name}</h3>
-            <span className="chapter-rule" />
-          </div>
+            {chapter.name}
+          </h3>
           <dl className="sheet-attributes">
             {wheels
               .filter((wheel) => wheel.chapterId === chapter.id)
@@ -49,24 +44,23 @@ export default function CharacterSheet({ state }: { state: GameState }) {
                   !!visibleResults[wheel.availableWhen.stepId] &&
                   !isWheelAvailable(wheel, visibleResults);
                 return (
-                  <div className={`sheet-attribute ${result ? 'is-filled' : ''}`} key={wheel.id}>
-                    <dt>
-                      <span className="attribute-diamond" aria-hidden="true">
-                        ◇
-                      </span>
-                      {wheel.name}
-                    </dt>
+                  <div className="sheet-attribute" key={wheel.id}>
+                    <dt>{wheel.name}</dt>
                     <dd>
                       {result ? (
-                        <>
-                          <span className="attribute-color" style={{ background: result.color }} />
-                          {result.name}
-                        </>
+                        <button
+                          className="sheet-result"
+                          onClick={() => onInspect(wheel.id)}
+                          aria-label={`Ver detalhes de ${wheel.name}: ${result.name}`}
+                        >
+                          <span>{result.name}</span>
+                          <span className="sheet-detail-label">Detalhes</span>
+                        </button>
                       ) : (
                         <span className="attribute-empty">
                           {inapplicable
                             ? (wheel.unavailableLabel ?? 'Não se aplica')
-                            : 'Ainda não revelada'}
+                            : 'Não sorteado'}
                         </span>
                       )}
                     </dd>
@@ -76,23 +70,15 @@ export default function CharacterSheet({ state }: { state: GameState }) {
           </dl>
         </section>
       ))}
-      <div className="sheet-bottom">
-        <span className="small-seal" aria-hidden="true">
-          ✳
-        </span>
-        <p>
-          {count === 0
-            ? 'Os resultados de cada giro serão registrados aqui.'
-            : state.phase === 'complete'
-              ? 'Criação registrada. Sua ficha está salva neste navegador.'
-              : 'Cada resultado faz parte da sua história.'}
-        </p>
-      </div>
       <div className="sheet-footer">
-        <span>CAPÍTULO {chapterNumber}</span>
-        <span>
-          {String(count).padStart(2, '0')} ATRIBUTO{count !== 1 ? 'S' : ''}
-        </span>
+        <strong>
+          {count} resultado{count !== 1 ? 's' : ''}
+        </strong>
+        <p>
+          {count
+            ? 'Selecione um resultado para ver os detalhes.'
+            : 'Os resultados aparecerão aqui.'}
+        </p>
       </div>
     </aside>
   );

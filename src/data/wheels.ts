@@ -1,6 +1,8 @@
+import { physicalReferences, type CharacterReference } from './references.ts';
+
 export const chapters = [
-  { id: 'origin', name: 'Origem', hubLabel: 'ORIGEM', symbols: ['起', '源'] },
-  { id: 'physical', name: 'Atributos Físicos', hubLabel: 'FÍSICO', symbols: ['身', '体'] },
+  { id: 'origin', name: 'Origem', hubLabel: 'ORIGEM' },
+  { id: 'physical', name: 'Atributos físicos', hubLabel: 'FÍSICO' },
 ] as const;
 
 export interface WheelOption {
@@ -10,14 +12,13 @@ export interface WheelOption {
   description: string;
   weight: number;
   color: string;
+  reference?: CharacterReference;
 }
 
 export interface WheelDefinition {
   id: string;
   chapterId: (typeof chapters)[number]['id'];
   name: string;
-  title: string;
-  titleAccent: string;
   description: string;
   options: WheelOption[];
   availableWhen?: { stepId: string; optionId: string };
@@ -31,34 +32,31 @@ export const wheels: WheelDefinition[] = [
     id: 'nature',
     chapterId: 'origin',
     name: 'Natureza',
-    title: 'Qual é a sua',
-    titleAccent: 'natureza?',
-    description: 'Toda história tem uma origem. Descubra a sua.',
+    description: 'Sorteie a natureza do personagem.',
     options: [
       {
         id: 'human',
         name: 'Humano',
         shortLabel: 'HUMANO',
         weight: 70,
-        color: '#65558f',
+        color: '#91313a',
         description:
-          'Você é humano. Sua origem familiar será revelada na próxima roleta; sua natureza, por si só, não determina uma técnica amaldiçoada.',
+          'Ser humano. A próxima roleta define sua linhagem; esse resultado não determina uma técnica amaldiçoada.',
       },
       {
         id: 'cursed-spirit',
         name: 'Espírito amaldiçoado',
         shortLabel: 'ESPÍRITO',
         weight: 20,
-        color: '#355e5e',
-        description:
-          'Uma existência formada por energia amaldiçoada, associada às emoções negativas humanas. Sua origem começa do outro lado do mundo das maldições.',
+        color: '#3d5663',
+        description: 'Manifestação de energia amaldiçoada associada às emoções negativas humanas.',
       },
       {
         id: 'independent-cursed-corpse',
         name: 'Cadáver amaldiçoado independente',
         shortLabel: 'CADÁVER',
         weight: 8,
-        color: '#87665e',
+        color: '#4c5c52',
         description:
           'Um corpo artificial animado por energia amaldiçoada e capaz de agir de forma independente. Panda é um exemplo dessa existência na obra.',
       },
@@ -67,9 +65,9 @@ export const wheels: WheelDefinition[] = [
         name: 'Simuriano',
         shortLabel: 'SIMURIANO',
         weight: 2,
-        color: '#a58c56',
+        color: '#6e3d3f',
         description:
-          'Você pertence ao povo extraterrestre apresentado em Jujutsu Kaisen Modulo. Essa natureza não concede automaticamente habilidades específicas nesta criação.',
+          'Integrante do povo extraterrestre apresentado em Jujutsu Kaisen Modulo. Não define habilidades específicas.',
       },
     ],
   },
@@ -77,9 +75,7 @@ export const wheels: WheelDefinition[] = [
     id: 'lineage',
     chapterId: 'origin',
     name: 'Linhagem',
-    title: 'De onde',
-    titleAccent: 'você vem?',
-    description: 'Alguns nomes carregam uma história. Outros começam a própria.',
+    description: 'Sorteie a linhagem do personagem humano.',
     availableWhen: { stepId: 'nature', optionId: 'human' },
     unavailableLabel: 'Exclusiva para humanos',
     options: [
@@ -88,7 +84,7 @@ export const wheels: WheelDefinition[] = [
         name: 'Sem clã conhecido',
         shortLabel: 'SEM CLÃ',
         weight: 70,
-        color: '#65558f',
+        color: '#91313a',
         description:
           'Nenhuma ligação com os clãs listados foi estabelecida nesta criação. Isso não define seu potencial nem determina se você possui uma técnica.',
       },
@@ -97,7 +93,7 @@ export const wheels: WheelDefinition[] = [
         name: 'Clã Gojo',
         shortLabel: 'GOJO',
         weight: 5,
-        color: '#476c80',
+        color: '#66584e',
         description:
           'Sua linhagem está ligada ao clã Gojo, uma das três grandes famílias do jujutsu. Esse vínculo não garante o Ilimitado ou os Seis Olhos.',
       },
@@ -106,7 +102,7 @@ export const wheels: WheelDefinition[] = [
         name: 'Clã Zen’in',
         shortLabel: 'ZEN’IN',
         weight: 10,
-        color: '#355e5e',
+        color: '#3d5663',
         description:
           'Sua linhagem está ligada ao clã Zen’in, uma das três grandes famílias do jujutsu. Pertencer ao clã não determina sua técnica amaldiçoada.',
       },
@@ -115,7 +111,7 @@ export const wheels: WheelDefinition[] = [
         name: 'Clã Kamo',
         shortLabel: 'KAMO',
         weight: 10,
-        color: '#87665e',
+        color: '#4c5c52',
         description:
           'Sua linhagem está ligada ao clã Kamo, uma das três grandes famílias do jujutsu. Essa origem não concede automaticamente uma técnica hereditária.',
       },
@@ -124,7 +120,7 @@ export const wheels: WheelDefinition[] = [
         name: 'Família Inumaki',
         shortLabel: 'INUMAKI',
         weight: 5,
-        color: '#a58c56',
+        color: '#6e3d3f',
         description:
           'Sua origem está ligada à família Inumaki, associada à técnica da Fala Amaldiçoada. A linhagem, sozinha, não atribui essa técnica ao personagem.',
       },
@@ -134,63 +130,67 @@ export const wheels: WheelDefinition[] = [
     id: 'strength',
     chapterId: 'physical',
     name: 'Força física',
-    title: 'Qual é a sua',
-    titleAccent: 'força?',
-    description: 'Descubra sua referência de força no combate corpo a corpo.',
+    description: 'Sorteie a referência de força em combate corpo a corpo.',
     options: [
       {
         id: 'megumi',
+        reference: physicalReferences['strength.megumi'],
         name: 'Megumi Fushiguro',
         shortLabel: 'MEGUMI',
         weight: 30,
-        color: '#65558f',
+        color: '#91313a',
         description:
-          'Força inspirada no combate corporal de Megumi durante o Intercâmbio. A referência considera seus movimentos físicos, sem conceder shikigamis.',
+          'Força para disputar bloqueios e contra-ataques em combate próximo, tomando Megumi no Intercâmbio como referência. Não equivale à força de seus shikigamis nem à de Hanami.',
       },
       {
         id: 'panda',
+        reference: physicalReferences['strength.panda'],
         name: 'Panda',
         shortLabel: 'PANDA',
         weight: 25,
-        color: '#355e5e',
+        color: '#3d5663',
         description:
-          'Força inspirada nos golpes de Panda contra Mechamaru, no Intercâmbio. É uma referência de impacto físico, sem conceder seus núcleos ou formas.',
+          'Força de contato para pressionar a guarda e desferir golpes diretos, com Panda contra Mechamaru como referência. Suas diferentes formas não são somadas em um único atributo.',
       },
       {
         id: 'maki-goodwill',
-        name: 'Maki Zen’in (Intercâmbio)',
+        reference: physicalReferences['strength.maki-goodwill'],
+        name: 'Maki Zen’in',
         shortLabel: 'MAKI',
         weight: 20,
-        color: '#87665e',
+        color: '#4c5c52',
         description:
-          'Força inspirada em Maki no arco do Intercâmbio, quando enfrenta Miwa e participa do combate a Hanami. Não representa sua versão posterior no mangá.',
+          'Força para controlar uma arma e sustentar a pressão em combate próximo, como Maki no Intercâmbio. O dano da ferramenta não é transferido para o corpo.',
       },
       {
         id: 'todo',
+        reference: physicalReferences['strength.todo'],
         name: 'Aoi Todo',
         shortLabel: 'TODO',
         weight: 15,
-        color: '#476c80',
+        color: '#66584e',
         description:
-          'Força inspirada no combate corpo a corpo de Todo durante o Intercâmbio. A comparação é física e não inclui a troca de posições de sua técnica.',
+          'Força para manter uma troca de golpes intensa e pressionar um adversário a curta distância, tomando Todo no Intercâmbio como referência. Não inclui as trocas de posição de sua técnica.',
       },
       {
         id: 'yuji-goodwill',
-        name: 'Yuji Itadori (Intercâmbio)',
+        reference: physicalReferences['strength.yuji-goodwill'],
+        name: 'Yuji Itadori',
         shortLabel: 'YUJI',
         weight: 8,
-        color: '#82607c',
+        color: '#2e424f',
         description:
-          'Força inspirada na capacidade corporal de Yuji durante o Intercâmbio. O resultado não concede o Black Flash nem qualquer poder de Sukuna.',
+          'Força aplicada em socos, bloqueios e investidas sucessivas, com Yuji no Intercâmbio como referência. Não reproduz a potência de Black Flash ou Punho Divergente.',
       },
       {
         id: 'toji',
+        reference: physicalReferences['strength.toji'],
         name: 'Toji Fushiguro',
         shortLabel: 'TOJI',
         weight: 2,
-        color: '#a58c56',
+        color: '#6e3d3f',
         description:
-          'Força inspirada nos movimentos de Toji em seu confronto com Dagon, em Shibuya. Uma referência física rara no jogo, sem conceder armas ou Restrição Celestial.',
+          'Força para impor pressão em combate próximo e manejar uma arma com firmeza, tomando Toji em Shibuya como referência. Não é uma cópia do dano causado por sua ferramenta amaldiçoada.',
       },
     ],
   },
@@ -198,54 +198,57 @@ export const wheels: WheelDefinition[] = [
     id: 'speed',
     chapterId: 'physical',
     name: 'Velocidade',
-    title: 'Qual é o seu',
-    titleAccent: 'ritmo?',
-    description: 'Descubra sua referência de deslocamento e reação em combate.',
+    description: 'Sorteie a referência de deslocamento e reação corporal.',
     options: [
       {
         id: 'megumi',
+        reference: physicalReferences['speed.megumi'],
         name: 'Megumi Fushiguro',
         shortLabel: 'MEGUMI',
         weight: 35,
-        color: '#65558f',
+        color: '#91313a',
         description:
-          'Mobilidade inspirada nas esquivas e nos deslocamentos de Megumi no Intercâmbio. A referência não inclui transporte ou auxílio de shikigamis.',
+          'Mobilidade para ajustar a distância, reagir e recuar durante uma troca de ataques, com Megumi no Intercâmbio como referência. Não inclui deslocamento com shikigamis.',
       },
       {
         id: 'maki-goodwill',
-        name: 'Maki Zen’in (Intercâmbio)',
+        reference: physicalReferences['speed.maki-goodwill'],
+        name: 'Maki Zen’in',
         shortLabel: 'MAKI',
         weight: 30,
-        color: '#355e5e',
+        color: '#3d5663',
         description:
-          'Agilidade inspirada em Maki durante o Intercâmbio, especialmente no combate a Miwa. Considera essa fase da personagem, sem importar sua evolução posterior.',
+          'Agilidade para encurtar a distância e agir durante a abertura de um adversário, tomando o duelo de Maki com Miwa como referência. Considera apenas sua fase do Intercâmbio.',
       },
       {
         id: 'yuji-goodwill',
-        name: 'Yuji Itadori (Intercâmbio)',
+        reference: physicalReferences['speed.yuji-goodwill'],
+        name: 'Yuji Itadori',
         shortLabel: 'YUJI',
         weight: 20,
-        color: '#87665e',
+        color: '#4c5c52',
         description:
-          'Velocidade inspirada nas investidas e reações físicas de Yuji no Intercâmbio. Não envolve troca de posições, teletransporte ou poderes de Sukuna.',
+          'Movimentação para alternar aproximações, esquivas e ataques em sequência, com Yuji no Intercâmbio como referência. Não inclui o reposicionamento provocado por Todo.',
       },
       {
         id: 'todo',
+        reference: physicalReferences['speed.todo'],
         name: 'Aoi Todo',
         shortLabel: 'TODO',
         weight: 10,
-        color: '#476c80',
+        color: '#66584e',
         description:
-          'Reação inspirada na movimentação corporal de Todo durante o Intercâmbio. Sua técnica de troca de posições fica fora desta comparação.',
+          'Tempo de resposta para acompanhar uma troca corpo a corpo e ajustar a posição entre golpes, tomando Todo como referência. A troca instantânea de posições é uma técnica, não velocidade corporal.',
       },
       {
         id: 'toji',
+        reference: physicalReferences['speed.toji'],
         name: 'Toji Fushiguro',
         shortLabel: 'TOJI',
         weight: 5,
-        color: '#a58c56',
+        color: '#6e3d3f',
         description:
-          'Velocidade inspirada na pressão física de Toji ao enfrentar Megumi em Shibuya. É uma comparação de desempenho, sem atribuir a origem de suas capacidades.',
+          'Deslocamento e reação para pressionar um adversário com aproximações rápidas, tomando Toji contra Megumi como referência. Não equivale a teletransporte.',
       },
     ],
   },
@@ -253,54 +256,57 @@ export const wheels: WheelDefinition[] = [
     id: 'endurance',
     chapterId: 'physical',
     name: 'Resistência',
-    title: 'Quanto você',
-    titleAccent: 'aguenta?',
-    description: 'Descubra sua referência para suportar impactos e esforço físico.',
+    description: 'Sorteie a referência de resistência a impactos e esforço físico.',
     options: [
       {
         id: 'megumi',
+        reference: physicalReferences['endurance.megumi'],
         name: 'Megumi Fushiguro',
         shortLabel: 'MEGUMI',
         weight: 35,
-        color: '#65558f',
+        color: '#91313a',
         description:
-          'Resistência inspirada no esforço de Megumi durante o confronto com Hanami, no Intercâmbio. A comparação não concede proteção de shikigamis.',
+          'Capacidade de manter ações sob pressão e esforço em um combate difícil, com Megumi no Intercâmbio como referência. Ele é levado ao limite contra Hanami; isso não significa ignorar seus golpes.',
       },
       {
         id: 'panda',
+        reference: physicalReferences['endurance.panda'],
         name: 'Panda',
         shortLabel: 'PANDA',
         weight: 25,
-        color: '#355e5e',
+        color: '#3d5663',
         description:
-          'Resistência inspirada no confronto de Panda com Mechamaru. O resultado abstrai sua capacidade de suportar o combate, sem criar núcleos extras ou mudar sua natureza.',
+          'Capacidade de continuar lutando após impactos e pressão prolongada, tomando Panda contra Mechamaru como referência. A estrutura de seus núcleos não é transferida ao personagem.',
       },
       {
         id: 'todo',
+        reference: physicalReferences['endurance.todo'],
         name: 'Aoi Todo',
         shortLabel: 'TODO',
         weight: 20,
-        color: '#87665e',
+        color: '#4c5c52',
         description:
-          'Resistência inspirada na participação de Todo no combate a Hanami. É uma referência para manter o esforço físico, sem conceder técnicas.',
+          'Capacidade de sustentar o esforço e manter a participação em uma luta intensa, tomando Todo contra Hanami como referência. Não significa receber todos os ataques sem dano.',
       },
       {
         id: 'yuji-goodwill',
-        name: 'Yuji Itadori (Intercâmbio)',
+        reference: physicalReferences['endurance.yuji-goodwill'],
+        name: 'Yuji Itadori',
         shortLabel: 'YUJI',
         weight: 15,
-        color: '#476c80',
+        color: '#66584e',
         description:
-          'Resistência inspirada no esforço contínuo de Yuji durante o Intercâmbio. Não inclui cura, regeneração ou intervenção de Sukuna.',
+          'Capacidade de manter trocas e ataques sucessivos mesmo sob desgaste, com Yuji no Intercâmbio como referência. Não inclui cura ou intervenção de Sukuna.',
       },
       {
         id: 'hanami',
+        reference: physicalReferences['endurance.hanami'],
         name: 'Hanami',
         shortLabel: 'HANAMI',
         weight: 5,
-        color: '#a58c56',
+        color: '#6e3d3f',
         description:
-          'Resistência inspirada no confronto de Hanami com os alunos durante o Intercâmbio. O resultado não concede corpo de maldição, regeneração ou técnicas de Hanami.',
+          'Resistência a impactos inspirada em Hanami, que continua lutando contra sucessivos grupos no Intercâmbio. É uma abstração da cena, sem copiar sua regeneração ou natureza de maldição.',
       },
     ],
   },
