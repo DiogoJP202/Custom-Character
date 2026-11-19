@@ -15,7 +15,7 @@ export default function ResultReveal({
   return (
     <section className="result-reveal" aria-label="Resultado revelado">
       <div className="result-copy">
-        <span className="eyebrow">Sua origem se revela</span>
+        <span className="eyebrow">Resultado revelado</span>
         <h2 ref={heading} tabIndex={-1}>
           {result.name}
         </h2>

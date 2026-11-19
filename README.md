@@ -24,9 +24,10 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 ## O que está disponível
 
 - Capítulo 1 — Origem: Natureza e, para humanos, Linhagem.
+- Capítulo 2 — Atributos Físicos: Força física, Velocidade e Resistência para todas as naturezas.
 - Sorteio ponderado, segmentos proporcionais e parada no centro do resultado.
 - Uma rolagem por atributo, revelação, progressão e ficha parcial.
-- Salvamento automático da criação atual em `localStorage` (`jjk-spinner:v1`). Um giro é registrado antes da animação; recarregar não sorteia outro resultado.
+- Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato versionado). Partidas antigas preservam os resultados válidos; fichas antigas concluídas e etapas indisponíveis retomam em Força física. Um giro é registrado antes da animação; recarregar revela o mesmo resultado.
 - Ao encerrar, uma nova criação apaga todos os resultados anteriores.
 - Layout responsivo, teclado, anúncio do resultado e preferência por movimento reduzido.
 
@@ -40,18 +41,20 @@ Natureza: Humano 70, Espírito amaldiçoado 20, Cadáver amaldiçoado independen
 
 Linhagem: Sem clã conhecido 70, Gojo 5, Zen’in 10, Kamo 10, Inumaki 5.
 
-Cada etapa tem `id`, `name`, `title`, `titleAccent`, `description`, `options` e uma condição opcional `availableWhen: { stepId, optionId }`. Cada resultado tem `id`, `name`, `shortLabel`, `description`, `weight` e `color`. A condição atual compara um resultado anterior; não existe um motor genérico de regras.
+`chapters` define os títulos e os símbolos dos capítulos. Cada roleta aponta para um `chapterId`, contém suas opções e pode ter `availableWhen: { stepId, optionId }`. Cada resultado mantém identificador, nome, descrição, rótulo, peso e cor. A ordem do catálogo determina o fluxo e a validação de partidas, sem listas fixas de etapas em `game.ts`.
 
-O fluxo atual cobre apenas Origem. Novos resultados e etapas simples cabem na configuração; ao criar capítulos ou novos fluxos terminais, atualize também os títulos e a validação de persistência em `src/lib/game.ts`. Se os identificadores ou a estrutura salva deixarem de ser compatíveis, altere a versão da chave de armazenamento.
+Todos avançam de Origem para Atributos Físicos; somente humanos giram Linhagem. Cada atributo exige giro manual, revelação e Continuar. Segmentos menores que 10% usam marcadores numéricos maiores, correspondentes à legenda, sem alterar sua área. Alterações incompatíveis nos identificadores exigem uma migração explícita do salvamento.
 
 `src/lib/wheel.ts` concentra a geometria e o sorteio. `src/lib/game.ts` controla estados e persistência. Os componentes `Wheel`, `ResultReveal` e `CharacterSheet` apresentam o jogo; `App` conecta as interações.
 
 ## Referências e limites de cânone
 
-Este é um projeto de fãs. **As probabilidades e a combinação de origens são decisões de gameplay, não regras ou frequências oficiais.** O personagem criado é original; nenhuma linhagem concede automaticamente técnicas ou habilidades. “Sem clã conhecido” descreve a ausência de vínculo estabelecido pelo jogo, não uma classificação oficial da obra. Os próximos passos das naturezas não humanas não foram inventados.
+Este é um projeto de fãs. **Comparações de desempenho, probabilidades e combinações são abstrações do jogo, não classificações oficiais.** Referências físicas não concedem técnicas, armas, regeneração ou a natureza do personagem citado. Megumi, Panda, Maki, Todo, Yuji e Hanami são considerados no arco do Intercâmbio; Toji, em Shibuya. “Sem clã conhecido” descreve a ausência de vínculo estabelecido pelo jogo, não uma classificação oficial.
 
 - [Referência da experiência: Making a Custom JJK Character, Reddit](https://www.reddit.com/r/CTsandbox/comments/1nz8ysn/making_a_custom_jjk_character/). Usada como inspiração para a interação; o conteúdo fanmade não foi incorporado.
 - [Personagens — site oficial do anime](https://jujutsukaisen.jp/character/index_1st.php): descrições de Panda, Yaga, Toge Inumaki e personagens das famílias do jujutsu.
+- Referências físicas: [episódio 16](https://jujutsukaisen.jp/episodes/16.php) (Panda/Mechamaru e Todo/Yuji), [episódio 17](https://jujutsukaisen.jp/episodes/17.php) (Maki/Miwa), [episódio 19](https://jujutsukaisen.jp/episodes/19.php) e [episódio 20](https://jujutsukaisen.jp/episodes/20.php) (combate a Hanami). As comparações entre eles são interpretação de gameplay, sem ranking canônico ou valores numéricos de desempenho.
+- Toji: [personagem oficial](https://jujutsukaisen.jp/character/index_2nd.php), [episódio 39](https://jujutsukaisen.jp/episodes/39.php) (Dagon) e [episódio 40](https://jujutsukaisen.jp/episodes/40.php) (Megumi).
 - [Jujutsu Kaisen — Shonen Jump oficial](https://www.shonenjump.com/j/rensai/jujutsu/): universo original de Gege Akutami. As descrições de maldições e linhagens foram mantidas curtas e sem promessas de habilidades hereditárias.
 - Jujutsu Kaisen, mangá e volume 0: contexto dos cadáveres amaldiçoados, das três grandes famílias e da linhagem Inumaki. As descrições não reproduzem texto do mangá.
 - [Jujutsu Kaisen Modulo — VIZ oficial](https://www.viz.com/shonenjump/chapters/jujutsu-kaisen-modulo).

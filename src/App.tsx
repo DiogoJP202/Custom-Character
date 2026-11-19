@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { getOption, wheels } from './data/wheels.ts';
+import { getOption, getWheelProgress, wheels } from './data/wheels.ts';
 import { gameReducer, loadGame, saveGame } from './lib/game.ts';
-import { getSegments, pickOption } from './lib/wheel.ts';
+import { getSegments, pickOption, SMALL_SEGMENT_THRESHOLD } from './lib/wheel.ts';
 import Wheel, { Sigil } from './components/Wheel.tsx';
 import CharacterSheet from './components/CharacterSheet.tsx';
 import ResultReveal from './components/ResultReveal.tsx';
@@ -16,7 +16,16 @@ export default function App() {
   const firstRender = useRef(true);
   const wheel = wheels.find(({ id }) => id === state.stepId)!;
   const result = getOption(state.stepId, state.results[state.stepId]);
-  const terminal = state.phase === 'complete' || state.phase === 'pending';
+  const terminal = state.phase === 'complete';
+  const revealedResults =
+    state.phase === 'spinning'
+      ? Object.fromEntries(Object.entries(state.results).filter(([id]) => id !== state.stepId))
+      : state.results;
+  const { chapter, chapterNumber, stepNumber, totalSteps } = getWheelProgress(
+    wheel,
+    revealedResults,
+  );
+  const chapterLabel = String(chapterNumber).padStart(2, '0');
   const isIntro = state.phase === 'intro';
   const completeSpin = useCallback(() => dispatch({ type: 'reveal' }), []);
 
@@ -67,20 +76,20 @@ export default function App() {
           Uma criação do acaso
         </div>
         <span className="edition">
-          VOL. 01 <span>/</span> ORIGEM
+          VOL. {chapterLabel} <span>/</span> {chapter.hubLabel}
         </span>
       </header>
       <main id="game" className={`game-layout ${terminal ? 'terminal-layout' : ''}`}>
         <section className="play-area" aria-labelledby="game-title">
           <div className="chapter-indicator">
             <span className="chapter-dot" />
-            <span>CAPÍTULO 01</span>
+            <span>CAPÍTULO {chapterLabel}</span>
             <span className="indicator-slash">/</span>
-            <span>ORIGEM</span>
+            <span>{chapter.name.toLocaleUpperCase('pt-BR')}</span>
             <span className="step-indicator">
               {terminal
                 ? 'FIM DE CAPÍTULO'
-                : `ETAPA ${state.stepId === 'nature' ? '01' : '02'} · ${wheel.name.toLocaleUpperCase('pt-BR')}`}
+                : `ETAPA ${String(stepNumber).padStart(2, '0')} DE ${String(totalSteps).padStart(2, '0')} · ${wheel.name.toLocaleUpperCase('pt-BR')}`}
             </span>
           </div>
           <div className="game-heading">
@@ -96,10 +105,6 @@ export default function App() {
                 <>
                   <span className="heading-lead">Sua história</span> <em>começa aqui.</em>
                 </>
-              ) : state.phase === 'pending' ? (
-                <>
-                  <span className="heading-lead">Uma origem</span> <em>diferente.</em>
-                </>
               ) : (
                 <>
                   <span className="heading-lead">{wheel.title}</span> <em>{wheel.titleAccent}</em>
@@ -110,9 +115,7 @@ export default function App() {
               {isIntro
                 ? 'Gire as roletas. Descubra sua origem. Crie um personagem.'
                 : terminal
-                  ? state.phase === 'complete'
-                    ? 'As roletas disponíveis terminaram. Esta é a sua ficha parcial.'
-                    : 'Seu resultado está registrado. Esta jornada continua em uma próxima versão.'
+                  ? 'As roletas disponíveis terminaram. Esta é a sua ficha parcial.'
                   : wheel.description}
             </p>
           </div>
@@ -121,24 +124,14 @@ export default function App() {
               <div className="end-mark">
                 <Sigil />
               </div>
-              <span className="eyebrow">
-                {state.phase === 'pending' ? 'Próxima etapa' : 'Capítulo 1 concluído'}
-              </span>
-              <h2>
-                {state.phase === 'pending'
-                  ? getOption('nature', state.results.nature)?.name
-                  : 'Origem registrada'}
-              </h2>
+              <span className="eyebrow">Capítulo {chapterNumber} concluído</span>
+              <h2>Ficha parcial registrada</h2>
               <p>
-                {state.phase === 'pending'
-                  ? 'A próxima etapa específica dessa natureza ainda será implementada. Você já pode consultar sua ficha parcial.'
-                  : 'Natureza e origem fazem parte da sua história. Os próximos capítulos ainda estão por vir.'}
+                Os resultados dos capítulos disponíveis estão registrados. Os próximos capítulos
+                ainda estão por vir.
               </p>
-              <button
-                className="button button-primary"
-                onClick={() => dispatch({ type: state.phase === 'pending' ? 'finish' : 'reset' })}
-              >
-                {state.phase === 'pending' ? 'Ver ficha parcial' : 'Iniciar nova criação'}
+              <button className="button button-primary" onClick={() => dispatch({ type: 'reset' })}>
+                Iniciar nova criação
                 <span aria-hidden="true">✦</span>
               </button>
               {state.phase === 'complete' && (
@@ -176,7 +169,7 @@ export default function App() {
                       {isIntro
                         ? 'Iniciar criação'
                         : state.phase === 'spinning'
-                          ? 'Revelando sua origem…'
+                          ? 'Revelando resultado…'
                           : `Girar ${wheel.name.toLocaleLowerCase('pt-BR')}`}
                     </button>
                     <p className="interaction-note">
@@ -198,12 +191,21 @@ export default function App() {
                         maximumFractionDigits: 2,
                       }).format(probability)}
                     </span>
-                    {probability < 0.05 && <span className="legend-index">0{index + 1}</span>}
+                    {probability < SMALL_SEGMENT_THRESHOLD && (
+                      <span className="legend-index" aria-label={`Marcador ${index + 1} na roleta`}>
+                        {index + 1}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
               <p className="probability-note">
-                Probabilidades de gameplay. Não representam frequências oficiais da obra.
+                {chapter.id === 'physical'
+                  ? 'Referências e probabilidades são abstrações do jogo, não classificações oficiais. Não concedem técnicas ou poderes.'
+                  : 'Probabilidades de gameplay. Não representam frequências oficiais da obra.'}
+                {getSegments(wheel.options).some(
+                  ({ probability }) => probability < SMALL_SEGMENT_THRESHOLD,
+                ) && ' Os números identificam os segmentos menores na legenda.'}
               </p>
             </>
           )}

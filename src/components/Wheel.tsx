@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { WheelDefinition } from '../data/wheels.ts';
-import { getSegments, landingRotation } from '../lib/wheel.ts';
+import { chapters, type WheelDefinition } from '../data/wheels.ts';
+import { getSegments, landingRotation, SMALL_SEGMENT_THRESHOLD } from '../lib/wheel.ts';
 
 export function Sigil({ className = '' }: { className?: string }) {
   return (
@@ -32,6 +32,7 @@ export default function Wheel({
   onComplete: () => void;
 }) {
   const segments = getSegments(definition.options);
+  const chapter = chapters.find(({ id }) => id === definition.chapterId)!;
   const selected = segments.find(({ option }) => option.id === resultId);
   const targetRotation = selected ? landingRotation(selected) : 0;
   const [rotation, setRotation] = useState(() =>
@@ -74,12 +75,20 @@ export default function Wheel({
             role="img"
             aria-label={`Roleta de ${definition.name}. Probabilidades na legenda abaixo.`}
           >
-            {segments.map(({ option, start, end, middle, probability }) => {
+            {segments.map(({ option, start, end, middle, probability }, index) => {
+              const small = probability < SMALL_SEGMENT_THRESHOLD;
               const from = point(start, 195),
                 to = point(end, 195),
-                label = point(middle, 135);
+                label = point(middle, small ? 155 : 135);
               return (
                 <g key={option.id}>
+                  <title>
+                    {option.name} ·{' '}
+                    {new Intl.NumberFormat('pt-BR', {
+                      style: 'percent',
+                      maximumFractionDigits: 2,
+                    }).format(probability)}
+                  </title>
                   {end - start >= 359.999 ? (
                     <circle cx="200" cy="200" r="195" fill={option.color} />
                   ) : (
@@ -90,15 +99,16 @@ export default function Wheel({
                       strokeWidth="1.5"
                     />
                   )}
+                  {small && <circle className="segment-marker" cx={label.x} cy={label.y} r="11" />}
                   <text
                     x={label.x}
                     y={label.y}
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    transform={`rotate(${middle > 180 ? middle - 270 : middle - 90}, ${label.x}, ${label.y})`}
-                    className={`segment-label ${probability < 0.05 ? 'segment-label-rare' : ''}`}
+                    transform={`rotate(${small ? middle : middle > 180 ? middle - 270 : middle - 90}, ${label.x}, ${label.y})`}
+                    className={`segment-label ${small ? 'segment-label-index' : ''}`}
                   >
-                    {option.shortLabel}
+                    {small ? index + 1 : option.shortLabel}
                   </text>
                 </g>
               );
@@ -117,14 +127,14 @@ export default function Wheel({
         </div>
         <div className="wheel-hub">
           <Sigil />
-          <span>ORIGEM</span>
+          <span>{chapter.hubLabel}</span>
         </div>
       </div>
       <span className="wheel-coordinate coordinate-left" aria-hidden="true">
-        起
+        {chapter.symbols[0]}
       </span>
       <span className="wheel-coordinate coordinate-right" aria-hidden="true">
-        源
+        {chapter.symbols[1]}
       </span>
     </div>
   );

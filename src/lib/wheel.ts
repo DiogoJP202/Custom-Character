@@ -1,5 +1,7 @@
 import type { WheelOption } from '../data/wheels.ts';
 
+export const SMALL_SEGMENT_THRESHOLD = 0.1;
+
 export interface Segment {
   option: WheelOption;
   start: number;
