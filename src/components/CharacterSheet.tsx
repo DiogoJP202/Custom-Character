@@ -52,6 +52,7 @@ export default function CharacterSheet({
                           className="sheet-result"
                           onClick={() => onInspect(wheel.id)}
                           aria-label={`Ver detalhes de ${wheel.name}: ${result.name}`}
+                          aria-haspopup="dialog"
                         >
                           <span>{result.name}</span>
                           <span className="sheet-detail-label">Detalhes</span>

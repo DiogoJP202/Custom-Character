@@ -37,7 +37,7 @@
 }
 body {
   margin: 0;
-  min-width: 320px;
+  min-width: 0;
 }
 body::before {
   content: '';
@@ -366,7 +366,7 @@ h1 {
   background: transparent;
   color: #c1c9cf;
   padding: 9px 12px;
-  min-height: 40px;
+  min-height: 44px;
   font-size: 13px;
 }
 .test-mode-toggle.is-active {
@@ -557,7 +557,7 @@ h1 {
   gap: 10px;
   border: 0;
   padding: 3px 0;
-  min-height: 35px;
+  min-height: 44px;
   text-align: left;
   width: 100%;
   background: transparent;
@@ -574,7 +574,7 @@ h1 {
   color: #91313a;
 }
 .sheet-detail-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
   color: #58616a;
 }
@@ -608,87 +608,83 @@ h1 {
 .result-header {
   padding: 25px 28px 24px;
   background: #252a30;
+  position: relative;
+  overflow: hidden;
 }
 .result-header.has-reference {
-  display: grid;
-  grid-template-columns: 132px minmax(0, 1fr);
-  gap: 26px;
-  align-items: center;
+  background: var(--paper);
+  color: var(--ink);
+  border-left: 8px solid var(--steel);
 }
-.reference-portrait {
-  background: #e8e3d9;
-  color: #252a30;
-  min-height: 172px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  position: relative;
-  padding: 10px 9px 9px;
-  border-bottom: 8px solid #bd303b;
-}
-.reference-portrait::after {
-  content: '';
-  position: absolute;
-  right: -8px;
-  top: 0;
-  height: 100%;
-  width: 19px;
-  background: #bd303b;
-  transform: skew(-12deg);
-}
-.portrait-label {
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: 0.5px;
+.result-identity {
   position: relative;
   z-index: 1;
 }
-.portrait-initials {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 92px;
-  line-height: 0.9;
-  letter-spacing: -4px;
+/* Original print composition: cropped panels and offset ink, without character art. */
+.reference-print {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 80px;
+  border-right: 12px solid var(--red);
+  pointer-events: none;
 }
-.portrait-caption {
-  font-size: 10px;
-  letter-spacing: 0.7px;
-  font-weight: 500;
+.reference-print i {
+  position: absolute;
+  height: 90px;
+  width: 12px;
+  background: #526b7822;
+  transform: skew(-24deg);
+  right: -28px;
+  top: -20px;
+}
+.reference-print i:nth-child(2) {
+  right: -6px;
+}
+.reference-print i:nth-child(3) {
+  right: 16px;
+  width: 3px;
 }
 .result-attribute {
   display: block;
   color: #bac4cc;
   text-transform: uppercase;
   letter-spacing: 1.1px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
 }
 .result-attribute > span {
   color: #d56870;
   margin: 0 4px;
 }
+.has-reference .result-attribute {
+  color: #4c5962;
+}
+.has-reference .result-attribute > span {
+  color: #91313a;
+}
 .result-identity h2 {
   font-family: var(--display);
   text-transform: uppercase;
   font-weight: 700;
-  font-size: clamp(34px, 4vw, 54px);
+  font-size: clamp(36px, 4vw, 54px);
   line-height: 1;
   margin: 10px 0 0;
   overflow-wrap: anywhere;
 }
 .reference-version {
-  font-size: 13px;
-  color: #c2cbd2;
+  font-size: 14px;
+  color: #4c5962;
   line-height: 1.6;
-  margin: 14px 0 0;
+  margin: 12px 0 0;
 }
 .result-body {
-  padding: 26px 28px 0;
+  padding: 24px 28px 0;
+}
+.result-body.simple-result {
+  padding-bottom: 24px;
 }
 .result-body h3 {
-  font-size: 12px;
+  font-size: 13px;
   color: #b8c1c9;
   text-transform: uppercase;
   letter-spacing: 1.3px;
@@ -697,14 +693,58 @@ h1 {
 }
 .practical-description > p {
   font-size: 16px;
-  line-height: 1.8;
+  line-height: 1.7;
   color: #e8e3d9;
   margin: 0;
 }
+.practical-description > .comparison-note {
+  font-size: 13px;
+  color: #a6adb3;
+  margin-top: 10px;
+}
+.representative-feat {
+  margin: 20px 0 22px;
+  padding-left: 16px;
+  border-left: 2px solid var(--steel);
+}
+.representative-feat h3 {
+  margin-bottom: 6px;
+}
+.representative-feat p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.65;
+}
+.reference-details {
+  border-top: 1px solid var(--line);
+}
+.reference-details > summary {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  list-style: none;
+  color: #c2cbd2;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.reference-details > summary::-webkit-details-marker {
+  display: none;
+}
+.reference-details > summary > span {
+  font-size: 24px;
+  font-weight: 300;
+  transition: transform 150ms ease;
+}
+.reference-details[open] > summary > span {
+  transform: rotate(45deg);
+}
+.reference-details-body {
+  padding: 8px 0 24px;
+}
 .reference-feats {
-  border-top: 1px solid #3a4046;
-  margin-top: 25px;
-  padding-top: 23px;
+  margin-top: 0;
 }
 .reference-feats > ul {
   list-style: none;
@@ -754,7 +794,7 @@ h1 {
   margin: 0;
 }
 .reference-disclaimer {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.8;
   color: #a6adb3;
   margin: 20px 0 0;
@@ -769,7 +809,8 @@ h1 {
   border-top: 1px solid #3a4046;
   display: flex;
   justify-content: flex-end;
-  padding: 25px 28px 28px;
+  padding: 18px 28px;
+  margin-top: 0;
 }
 .result-actions .button {
   min-width: 170px;
@@ -812,7 +853,7 @@ h1 {
   background: transparent;
   padding: 7px 4px;
   border: 0;
-  min-height: 40px;
+  min-height: 44px;
   font-size: 14px;
 }
 .dialog-close > span {
@@ -949,25 +990,6 @@ h1 {
   .sheet-detail-label {
     display: none;
   }
-  .sheet-result {
-    min-height: 40px;
-  }
-  .result-header.has-reference {
-    gap: 20px;
-    grid-template-columns: 108px minmax(0, 1fr);
-  }
-  .reference-portrait {
-    min-height: 150px;
-  }
-  .portrait-initials {
-    font-size: 77px;
-  }
-  .portrait-label {
-    font-size: 9px;
-  }
-  .portrait-caption {
-    font-size: 9px;
-  }
 }
 @media (max-width: 800px) {
   .app-shell {
@@ -988,12 +1010,6 @@ h1 {
   .step-indicator {
     flex-basis: 100%;
     font-size: 12px;
-  }
-  .result-header.has-reference {
-    grid-template-columns: 1fr;
-  }
-  .reference-portrait {
-    display: none;
   }
   .result-header {
     padding: 22px;
@@ -1154,7 +1170,7 @@ h1 {
   }
   .sheet-detail-label {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
   }
   .sheet-footer > strong {
     font-size: 14px;
@@ -1163,48 +1179,25 @@ h1 {
     font-size: 13px;
   }
   .result-header.has-reference {
-    display: grid;
-    grid-template-columns: 88px minmax(0, 1fr);
-    gap: 18px;
     padding: 23px 20px;
-  }
-  .reference-portrait {
-    display: flex;
-    justify-content: center;
-    min-height: 129px;
-    padding: 9px 6px 8px;
-    border-bottom-width: 6px;
-  }
-  .reference-portrait::after {
-    width: 13px;
-  }
-  .portrait-label {
-    display: none;
-  }
-  .portrait-initials {
-    font-size: 65px;
-    letter-spacing: -3px;
-  }
-  .portrait-caption {
-    display: none;
   }
   .result-identity h2 {
     font-size: 34px;
     margin-top: 8px;
   }
   .result-attribute {
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 0.5px;
   }
   .reference-version {
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 9px;
   }
   .result-body {
     padding: 23px 20px 0;
   }
   .result-body h3 {
-    font-size: 12px;
+    font-size: 13px;
   }
   .practical-description > p,
   .feat-description {
@@ -1273,23 +1266,17 @@ h1 {
   .hub-name {
     font-size: 8px;
   }
-  .result-header.has-reference {
-    grid-template-columns: 1fr;
-  }
-  .reference-portrait {
-    display: none;
-  }
   .result-identity h2 {
     font-size: 38px;
   }
   .result-attribute {
-    font-size: 12px;
-  }
-  .reference-version {
     font-size: 13px;
   }
+  .reference-version {
+    font-size: 14px;
+  }
   .sheet-detail-label {
-    font-size: 11px;
+    font-size: 13px;
   }
 }
 @media (min-width: 701px) and (max-height: 800px) {

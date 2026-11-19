@@ -54,6 +54,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
     }
     case 'retry': {
       if (
+        import.meta.env?.PROD === true ||
         !action.testMode ||
         state.phase === 'spinning' ||
         !Object.hasOwn(state.results, action.stepId)

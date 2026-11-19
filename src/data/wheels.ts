@@ -140,7 +140,7 @@ export const wheels: WheelDefinition[] = [
         weight: 30,
         color: '#91313a',
         description:
-          'Força para disputar bloqueios e contra-ataques em combate próximo, tomando Megumi no Intercâmbio como referência. Não equivale à força de seus shikigamis nem à de Hanami.',
+          'Força de um feiticeiro treinado para bloquear, golpear e disputar o corpo a corpo. Megumi enfrenta Kamo assim, mas combina o físico com shikigamis e estratégia. A referência é essa capacidade de troca, sem copiar a força das invocações.',
       },
       {
         id: 'panda',
@@ -150,7 +150,7 @@ export const wheels: WheelDefinition[] = [
         weight: 25,
         color: '#3d5663',
         description:
-          'Força de contato para pressionar a guarda e desferir golpes diretos, com Panda contra Mechamaru como referência. Suas diferentes formas não são somadas em um único atributo.',
+          'Força de contato para pressionar a guarda, conter investidas e responder com golpes diretos. Panda leva esse tipo de disputa ao combate com Mechamaru. A referência não soma suas formas nem concede o modo gorila.',
       },
       {
         id: 'maki-goodwill',
@@ -160,7 +160,7 @@ export const wheels: WheelDefinition[] = [
         weight: 20,
         color: '#4c5c52',
         description:
-          'Força para controlar uma arma e sustentar a pressão em combate próximo, como Maki no Intercâmbio. O dano da ferramenta não é transferido para o corpo.',
+          'Força para controlar uma arma, disputar a guarda e desarmar no combate próximo. Maki impõe essa pressão a Miwa no Intercâmbio. O resultado representa o esforço corporal, sem conceder a arma ou copiar seu dano.',
       },
       {
         id: 'todo',
@@ -170,7 +170,7 @@ export const wheels: WheelDefinition[] = [
         weight: 15,
         color: '#66584e',
         description:
-          'Força para manter uma troca de golpes intensa e pressionar um adversário a curta distância, tomando Todo no Intercâmbio como referência. Não inclui as trocas de posição de sua técnica.',
+          'Golpes pesados e força para manter pressão numa disputa corpo a corpo. Todo exige que Yuji se defenda e ajuste sua forma de lutar durante o Intercâmbio. A comparação não concede seu reforço de energia ou Boogie Woogie.',
       },
       {
         id: 'yuji-goodwill',
@@ -180,7 +180,7 @@ export const wheels: WheelDefinition[] = [
         weight: 8,
         color: '#2e424f',
         description:
-          'Força aplicada em socos, bloqueios e investidas sucessivas, com Yuji no Intercâmbio como referência. Não reproduz a potência de Black Flash ou Punho Divergente.',
+          'Força para responder com socos e investidas mesmo numa troca física intensa. Yuji consegue enfrentar Todo corpo a corpo, embora ainda precise corrigir sua execução. O resultado não reproduz Black Flash, Punho Divergente ou poderes de Sukuna.',
       },
       {
         id: 'toji',
@@ -190,7 +190,7 @@ export const wheels: WheelDefinition[] = [
         weight: 2,
         color: '#6e3d3f',
         description:
-          'Força para impor pressão em combate próximo e manejar uma arma com firmeza, tomando Toji em Shibuya como referência. Não é uma cópia do dano causado por sua ferramenta amaldiçoada.',
+          'Força bruta para impor pressão a curta distância e aplicar golpes vigorosos com uma arma. Toji reanimado demonstra isso ao atacar Dagon em Shibuya. O dano da Nuvem Brincalhona não é convertido em força desarmada, e a arma não é concedida.',
       },
     ],
   },
@@ -208,7 +208,7 @@ export const wheels: WheelDefinition[] = [
         weight: 35,
         color: '#91313a',
         description:
-          'Mobilidade para ajustar a distância, reagir e recuar durante uma troca de ataques, com Megumi no Intercâmbio como referência. Não inclui deslocamento com shikigamis.',
+          'Mobilidade para ajustar a distância, reagir a golpes e recuar sem abandonar a defesa. Megumi troca ataques com Kamo e tenta escapar de Hanami com o grupo. Isso não garante superar esses adversários em velocidade nem inclui transporte por shikigamis.',
       },
       {
         id: 'maki-goodwill',
@@ -218,7 +218,7 @@ export const wheels: WheelDefinition[] = [
         weight: 30,
         color: '#3d5663',
         description:
-          'Agilidade para encurtar a distância e agir durante a abertura de um adversário, tomando o duelo de Maki com Miwa como referência. Considera apenas sua fase do Intercâmbio.',
+          'Agilidade para encurtar a distância e agir antes que uma abertura se feche. Maki usa movimentação e reação para pressionar Miwa no Intercâmbio. A referência não separa completamente o movimento da habilidade com armas e não inclui sua evolução posterior.',
       },
       {
         id: 'yuji-goodwill',
@@ -228,7 +228,7 @@ export const wheels: WheelDefinition[] = [
         weight: 20,
         color: '#4c5c52',
         description:
-          'Movimentação para alternar aproximações, esquivas e ataques em sequência, com Yuji no Intercâmbio como referência. Não inclui o reposicionamento provocado por Todo.',
+          'Movimentação para alternar aproximações, esquivas e ataques sem interromper a troca. Yuji acompanha o ritmo do confronto com Todo durante o Intercâmbio. Os saltos de posição provocados por Boogie Woogie não contam como deslocamento do corpo.',
       },
       {
         id: 'todo',
@@ -238,7 +238,7 @@ export const wheels: WheelDefinition[] = [
         weight: 10,
         color: '#66584e',
         description:
-          'Tempo de resposta para acompanhar uma troca corpo a corpo e ajustar a posição entre golpes, tomando Todo como referência. A troca instantânea de posições é uma técnica, não velocidade corporal.',
+          'Reação para acompanhar os ataques de Yuji e ajustar a posição entre golpes. Todo mantém a troca enquanto observa e corrige o adversário. Isso representa resposta corporal, sem copiar a troca instantânea de posições de Boogie Woogie.',
       },
       {
         id: 'toji',
@@ -248,7 +248,7 @@ export const wheels: WheelDefinition[] = [
         weight: 5,
         color: '#6e3d3f',
         description:
-          'Deslocamento e reação para pressionar um adversário com aproximações rápidas, tomando Toji contra Megumi como referência. Não equivale a teletransporte.',
+          'Arrancadas e mudanças de posição que deixam pouco tempo para o adversário reagir. Toji reanimado pressiona Megumi com suas investidas em Shibuya. É uma referência de movimento corporal, sem teletransporte ou concessão de Restrição Celestial.',
       },
     ],
   },
@@ -266,7 +266,7 @@ export const wheels: WheelDefinition[] = [
         weight: 35,
         color: '#91313a',
         description:
-          'Capacidade de manter ações sob pressão e esforço em um combate difícil, com Megumi no Intercâmbio como referência. Ele é levado ao limite contra Hanami; isso não significa ignorar seus golpes.',
+          'Fôlego para continuar se movendo, defendendo e buscando uma resposta sob desgaste. Megumi ainda participa do confronto com Hanami, mas é levado ao limite. A referência não permite absorver os golpes da maldição sem consequências.',
       },
       {
         id: 'panda',
@@ -276,7 +276,7 @@ export const wheels: WheelDefinition[] = [
         weight: 25,
         color: '#3d5663',
         description:
-          'Capacidade de continuar lutando após impactos e pressão prolongada, tomando Panda contra Mechamaru como referência. A estrutura de seus núcleos não é transferida ao personagem.',
+          'Capacidade de retomar a luta depois de impactos e manter o esforço sob pressão. Panda continua enfrentando Mechamaru após ser atingido. Seus núcleos influenciam essa continuidade; a comparação não concede núcleos extras, reparação ou regeneração.',
       },
       {
         id: 'todo',
@@ -286,7 +286,7 @@ export const wheels: WheelDefinition[] = [
         weight: 20,
         color: '#4c5c52',
         description:
-          'Capacidade de sustentar o esforço e manter a participação em uma luta intensa, tomando Todo contra Hanami como referência. Não significa receber todos os ataques sem dano.',
+          'Fôlego para manter ataques, defesas e movimentação durante uma luta intensa. Todo sustenta a ação ao lado de Yuji contra Hanami. Sua técnica e a cooperação reduzem a exposição aos golpes; isso não equivale a aguentar todos eles no corpo.',
       },
       {
         id: 'yuji-goodwill',
@@ -296,7 +296,7 @@ export const wheels: WheelDefinition[] = [
         weight: 15,
         color: '#66584e',
         description:
-          'Capacidade de manter trocas e ataques sucessivos mesmo sob desgaste, com Yuji no Intercâmbio como referência. Não inclui cura ou intervenção de Sukuna.',
+          'Capacidade de seguir trocando golpes e partir para novas investidas mesmo sob desgaste. Yuji continua no confronto com Todo e depois enfrenta Hanami. O resultado não inclui cura de Sukuna, regeneração ou resistência automática a técnicas.',
       },
       {
         id: 'hanami',
@@ -306,7 +306,7 @@ export const wheels: WheelDefinition[] = [
         weight: 5,
         color: '#6e3d3f',
         description:
-          'Resistência a impactos inspirada em Hanami, que continua lutando contra sucessivos grupos no Intercâmbio. É uma abstração da cena, sem copiar sua regeneração ou natureza de maldição.',
+          'Resistência para permanecer em combate após ofensivas sucessivas. Hanami enfrenta Megumi e Maki e depois continua contra Yuji e Todo. A cena envolve um corpo de maldição; o jogo usa sua persistência como referência, sem conceder regeneração ou imunidade.',
       },
     ],
   },

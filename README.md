@@ -30,7 +30,7 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 - Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato versionado). Partidas antigas preservam os resultados válidos; fichas antigas concluídas e etapas indisponíveis retomam em Força física. Um giro é registrado antes da animação; recarregar revela o mesmo resultado.
 - Ao encerrar, uma nova criação apaga todos os resultados anteriores.
 - Layout responsivo, teclado, anúncio do resultado e preferência por movimento reduzido.
-- Modo de teste opcional no topo: libera **Tentar novamente** no resultado e nos detalhes da ficha. Repetir apaga essa etapa e as seguintes. O modo inicia desligado.
+- Modo de teste somente em `npm run dev`, desligado por padrão: libera **Tentar novamente** no resultado e nos detalhes da ficha. Repetir apaga essa etapa e as seguintes. O build de produção bloqueia retry, mesmo com a flag manipulada.
 
 Se o navegador bloquear o armazenamento, a criação continua em memória até a página ser fechada ou recarregada. O salvamento é local à origem/endereço usado para abrir o site.
 
@@ -48,7 +48,7 @@ Todos avançam de Origem para Atributos Físicos; somente humanos giram Linhagem
 
 `src/lib/wheel.ts` concentra a geometria e o sorteio. `src/lib/game.ts` controla estados e persistência. Os componentes `Wheel`, `ResultReveal` e `CharacterSheet` apresentam o jogo; `App` conecta as interações.
 
-Os detalhes de qualquer resultado podem ser reabertos pela ficha, sem novo sorteio. A apresentação é tipográfica, sem artes oficiais ou hotlink. Barlow Condensed e IBM Plex Sans são servidas localmente; suas licenças OFL estão em `public/fonts/`.
+Os detalhes de qualquer resultado podem ser reabertos pela ficha, sem novo sorteio. A revelação resume a capacidade prática e um feito; os contextos, fontes e limites ficam numa seção expansível. A composição editorial é original, sem artes oficiais ou hotlink. Barlow Condensed e IBM Plex Sans são servidas localmente; suas licenças OFL estão em `public/fonts/`.
 
 ## Referências e limites de cânone
 

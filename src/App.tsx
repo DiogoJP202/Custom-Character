@@ -9,7 +9,8 @@ import ResultReveal, { ResultDialog } from './components/ResultReveal.tsx';
 export default function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, loadGame);
   const [inspectedStep, setInspectedStep] = useState<string | null>(null);
-  const [testMode, setTestMode] = useState(false);
+  const [testModeEnabled, setTestMode] = useState(false);
+  const testMode = import.meta.env.DEV && testModeEnabled;
   const [wheelRun, setWheelRun] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -63,6 +64,7 @@ export default function App() {
   }
 
   function retry(stepId = state.stepId) {
+    if (!import.meta.env.DEV) return;
     const action = { type: 'retry' as const, stepId, testMode };
     const next = gameReducer(state, action);
     if (next === state) return;
@@ -91,15 +93,17 @@ export default function App() {
         <p className="header-context">
           JUJUTSU KAISEN <span>FAN GAME</span>
         </p>
-        <button
-          className={`test-mode-toggle ${testMode ? 'is-active' : ''}`}
-          aria-pressed={testMode}
-          disabled={state.phase === 'spinning'}
-          onClick={() => setTestMode((enabled) => !enabled)}
-        >
-          <span className="test-label">Modo de teste</span>
-          <span className="test-label-compact">Teste</span>
-        </button>
+        {import.meta.env.DEV && (
+          <button
+            className={`test-mode-toggle ${testMode ? 'is-active' : ''}`}
+            aria-pressed={testMode}
+            disabled={state.phase === 'spinning'}
+            onClick={() => setTestMode((enabled) => !enabled)}
+          >
+            <span className="test-label">Modo de teste</span>
+            <span className="test-label-compact">Teste</span>
+          </button>
+        )}
       </header>
       <main id="game" className="game-layout">
         <section className="play-area" aria-labelledby="game-title">
@@ -190,6 +194,7 @@ export default function App() {
                   attribute={wheel.name}
                   result={result}
                   focusOnMount={!inspectedResult}
+                  reducedMotion={reducedMotion}
                   onContinue={() => dispatch({ type: 'continue' })}
                   onRetry={testMode ? () => retry() : undefined}
                 />
