@@ -119,6 +119,10 @@ Ao concluir os oito capítulos disponíveis, a criação vira um dossiê com ide
 
 O registro v1 fixa seu limite histórico em `domain-expansion`; sua validação reutiliza o parser de jogo sem retomar etapas futuras. Um novo catálogo de arquivamento deverá versionar esse limite, preservando a leitura de v1. JSON ou registros inválidos não são sobrescritos: as fichas legíveis permanecem disponíveis e alterações ficam bloqueadas. Escritas falhas não são confirmadas. As mutações releem a coleção e a interface acompanha eventos `storage`, mas localStorage não oferece transações entre abas. Os dados pertencem somente a este navegador, sem sincronização em nuvem.
 
+### Exportação visual
+
+“Exportar PNG” está disponível na ficha concluída e nas fichas da galeria. Gera um dossiê de 1200 × 2160 px, com identidade, capacidades e interpretações resumidas do perfil existente, sem novos sorteios ou alterações no armazenamento. `html-to-image` é carregado somente ao exportar; as fontes locais são incorporadas. A geração tem feedback, limite de tempo e verificação de conteúdo para evitar cortes. O link “Baixar PNG novamente” permanece disponível se o navegador não iniciar o download; a gravação final depende das permissões do navegador. A renderização pode variar entre navegadores e fontes de substituição usadas em nomes com caracteres não latinos.
+
 ## Referências e limites de cânone
 
 Este é um projeto de fãs. **Comparações de desempenho, probabilidades e combinações são abstrações do jogo, não classificações oficiais.** Referências físicas não concedem técnicas, armas, regeneração ou a natureza do personagem citado. Megumi, Panda, Maki, Todo, Yuji e Hanami são considerados no arco do Intercâmbio; Toji, em Shibuya. “Sem clã conhecido” descreve a ausência de vínculo estabelecido pelo jogo, não uma classificação oficial.

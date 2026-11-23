@@ -1612,6 +1612,221 @@ h1 {
     gap: 24px;
   }
 }
+
+.profile-export {
+  margin-top: 24px;
+}
+.profile-export > p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 12px 0 0;
+}
+.profile-export > .export-error {
+  color: #ffc4ca;
+}
+.profile-export > a {
+  display: inline-block;
+  min-height: 44px;
+  padding-block: 12px;
+  font-size: 14px;
+}
+.character-export-stage {
+  position: fixed;
+  left: -20000px;
+  top: 0;
+  width: 1200px;
+  pointer-events: none;
+}
+/* Fixed poster styling deliberately stays outside responsive rules. */
+.character-export-card {
+  --cex-body: 25px;
+  --cex-leading: 1.42;
+  width: 1200px;
+  height: 2160px;
+  padding: 52px 56px 42px;
+  background: #111316;
+  color: #e8e3d9;
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  font-size: var(--cex-body);
+  line-height: var(--cex-leading);
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  box-sizing: border-box;
+}
+.character-export-card[data-density='compact'] {
+  --cex-body: 24px;
+  --cex-leading: 1.38;
+  gap: 25px;
+}
+.character-export-card[data-density='dense'] {
+  --cex-body: 23px;
+  --cex-leading: 1.36;
+  gap: 22px;
+}
+.character-export-card > * {
+  flex-shrink: 0;
+}
+/* Density changes must settle immediately, including under the global reduced-motion rule. */
+.character-export-card,
+.character-export-card * {
+  transition: none !important;
+  animation: none !important;
+}
+.cex-brand {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: 19px;
+  letter-spacing: 2px;
+  color: #b7c6ce;
+  padding-bottom: 18px;
+  border-bottom: 2px solid #526b78;
+}
+.cex-brand > span:first-child {
+  color: #e8e3d9;
+  font-weight: 600;
+}
+.cex-identity {
+  padding: 30px 34px;
+  background: #e8e3d9;
+  color: #111316;
+  border-left: 9px solid #bd303b;
+}
+.cex-eyebrow {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #73303a;
+}
+.cex-name {
+  font:
+    700 66px / 1.04 'Barlow Condensed',
+    'Arial Narrow',
+    sans-serif;
+  text-transform: uppercase;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.cex-identity-title {
+  font:
+    700 34px / 1.15 'Barlow Condensed',
+    'Arial Narrow',
+    sans-serif;
+  margin: 12px 0 0;
+}
+.cex-name[data-long='true'] {
+  font-size: 48px;
+}
+.cex-summary {
+  margin: 18px 0 0;
+  font-size: 23px;
+  line-height: 1.45;
+}
+.cex-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px 30px;
+  margin: 0;
+  padding-bottom: 26px;
+  border-bottom: 2px solid #526b78;
+}
+.cex-facts dt {
+  color: #a6adb3;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+.cex-facts dd {
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.character-export-card > .cex-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 42px;
+}
+.cex-capabilities,
+.cex-interpretation {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+  min-width: 0;
+  min-height: 0;
+}
+.cex-capabilities > *,
+.cex-interpretation > * {
+  flex-shrink: 0;
+}
+.cex-section-title {
+  font:
+    700 33px / 1.1 'Barlow Condensed',
+    'Arial Narrow',
+    sans-serif;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #526b78;
+}
+.cex-capabilities > .cex-section-title {
+  margin-bottom: 0;
+}
+.cex-capability h4 {
+  color: #b7c6ce;
+  font-size: 21px;
+  line-height: 1.3;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.cex-capability p,
+.cex-style p {
+  margin: 0;
+  font-size: var(--cex-body);
+  line-height: var(--cex-leading);
+}
+.cex-capability p + p,
+.cex-style p + p {
+  margin-top: 10px;
+}
+.cex-assessment ul {
+  margin: 0;
+  padding-left: 25px;
+}
+.cex-assessment li {
+  font-size: var(--cex-body);
+  line-height: var(--cex-leading);
+}
+.cex-assessment li + li {
+  margin-top: 10px;
+}
+.cex-limits > .cex-section-title {
+  border-color: #bd303b;
+}
+.cex-footer {
+  border-top: 2px solid #3a4046;
+  padding-top: 20px;
+  color: #a6adb3;
+  font-size: 18px;
+  line-height: 1.4;
+}
+.cex-footer p {
+  margin: 0 0 10px;
+}
+.cex-footer span {
+  color: #e8e3d9;
+  font-size: 18px;
+}
 @media (max-width: 420px) {
   .profile-identity {
     padding: 22px 18px;

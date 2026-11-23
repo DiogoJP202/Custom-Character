@@ -3,6 +3,7 @@ import { characterProfile } from '../lib/character-profile.ts';
 import { wheelForStep } from '../lib/conditions.ts';
 import type { GameState } from '../lib/game.ts';
 import CharacterSheet from './CharacterSheet.tsx';
+import { CharacterExportButton } from './CharacterExportCard.tsx';
 
 export default function FinalCharacterSheet({
   state,
@@ -111,6 +112,7 @@ export default function FinalCharacterSheet({
         </summary>
         <CharacterSheet state={state} onInspect={onInspect} showSummaries={false} scope={scope} />
       </details>
+      <CharacterExportButton state={state} name={characterName ?? savedName} scope={scope} />
       {!readOnly && (
         <footer className="profile-actions">
           <div>

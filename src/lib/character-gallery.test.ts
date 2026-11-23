@@ -435,6 +435,7 @@ test('the actual final-sheet component refuses all game actions in archive mode 
     /Tentar novamente|Criar outro personagem|Salvar na galeria|profile-actions/,
   );
   assert.match(archived, /&lt;img src=x/);
+  assert.match(archived, /Exportar PNG/);
   assert.doesNotMatch(archived, /<img/);
   assert.equal(JSON.stringify(state), original);
 });
