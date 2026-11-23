@@ -48,7 +48,7 @@ function chapterSix(choices: Record<string, string> = {}): GameState {
 }
 
 function finish(state: GameState, choices: Record<string, string> = {}): GameState {
-  for (let i = 0; state.phase !== 'complete'; i++) {
+  for (let i = 0; state.phase !== 'complete' && masteryIds.includes(state.stepId); i++) {
     assert.ok(i < masteryIds.length);
     const options = playableWheel(stage(state.stepId), state).options;
     state = advance(state, choices[state.stepId] ?? options[0].id);
@@ -155,7 +155,7 @@ test('no innate technique skips proficiency but preserves both general energy ro
       2,
     );
     state = finish(state, { 'energy-control': 'advanced', 'energy-output': 'high' });
-    assert.equal(state.stepId, 'energy-output');
+    assert.equal(state.stepId, 'recovery');
     assert.equal(state.results['technique-proficiency'], undefined);
     assert.equal(state.results['energy-reserve'], 'immense');
     assert.match(
@@ -179,7 +179,7 @@ test('full restriction skips all three stages without randomness and rejects for
   try {
     const complete = chapterSix({ 'birth-condition': 'physical-complete' });
     assert.equal(complete.phase, 'complete');
-    assert.equal(complete.stepId, 'endurance');
+    assert.equal(complete.stepId, 'equipment');
     assert.match(energySummary(complete).join(' '), /Sem energia própria/);
     for (const id of masteryIds) {
       assert.equal(isStageAvailable(stage(id), complete), false);

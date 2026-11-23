@@ -81,8 +81,8 @@ test('all human birth conditions affect final physical capacities without erasin
       }
     }
     if (condition === 'physical-complete') {
-      assert.equal(state.phase, 'complete');
-      assert.equal(state.stepId, 'endurance');
+      assert.equal(state.phase, 'ready');
+      assert.equal(state.stepId, 'equipment');
       assert.equal(state.results['energy-reserve'], undefined);
       assert.match(automaticOutcome('energy-reserve', state)!.description, /Nenhuma energia/);
     } else {
@@ -107,7 +107,8 @@ test('all human birth conditions affect final physical capacities without erasin
       state = commit(state, 'good');
       assert.equal(state.stepId, 'energy-output');
       state = commit(state, condition === 'physical-partial' ? 'very-low' : 'high');
-      assert.equal(state.phase, 'complete');
+      assert.equal(state.stepId, 'recovery');
+      assert.equal(state.phase, condition === 'physical-partial' ? 'revealed' : 'ready');
       if (condition === 'body-limited') {
         assert.match(resultDetails('energy-reserve', state)!.description, /não altera o estoque/);
         assert.match(physicalAdjustment('speed', state)!.label, /locomoção muito limitada/);
@@ -138,7 +139,7 @@ test('nonhuman energy uses each nature, including rolloluca, with no human birth
     }
     for (const option of wheels.find((wheel) => wheel.id === 'energy-reserve')!.options) {
       const complete = commit(state, option.id);
-      assert.equal(complete.phase, nature === 'cursed-spirit' ? 'ready' : 'complete');
+      assert.equal(complete.phase, nature === 'cursed-spirit' ? 'ready' : 'revealed');
       assert.match(resultDetails('energy-reserve', complete)!.description, term);
       assert.equal(complete.results['birth-condition'], undefined);
     }

@@ -52,7 +52,7 @@ function beforeTech(
         string
       >
     )[state.stepId];
-    state = advance(state, choice ?? stage(state.stepId).options[0].id);
+    state = advance(state, choice ?? playableWheel(stage(state.stepId), state).options[0].id);
   }
   return state;
 }
@@ -127,7 +127,7 @@ test('low reserves and partial restrictions limit use rather than guaranteeing o
 test('full heavenly restriction skips both new wheels and rejects forged technique saves and spins', () => {
   const complete = beforeTech('human', 'zenin', 'physical-complete');
   assert.equal(complete.phase, 'complete');
-  assert.equal(complete.stepId, 'endurance');
+  assert.equal(complete.stepId, 'equipment');
   assert.deepEqual(eligibleTechniques(complete), []);
   assert.match(automaticOutcome('technique-presence', complete)!.description, /energia própria/);
   for (const stepId of ['technique-presence', 'innate-technique']) {
@@ -227,16 +227,24 @@ test('eligible probabilities, sampling and landing share one filtered distributi
 test('completed v3 games resume only eligible new stages, preserving every old result', () => {
   for (const nature of ['human', 'cursed-spirit', 'independent-cursed-corpse', 'simurian']) {
     const current = beforeTech(nature, 'gojo');
-    const old = { ...current, phase: 'complete', stepId: 'energy-reserve' };
+    const old = {
+      ...current,
+      phase: 'complete',
+      stepId: 'energy-reserve',
+      results: Object.fromEntries(
+        Object.entries(current.results).filter(([id]) => stage(id).chapterId !== 'advanced'),
+      ),
+    };
     const restored = parseSavedGame(JSON.stringify(old));
-    assert.deepEqual(restored.results, old.results);
+    for (const [id, value] of Object.entries(old.results))
+      assert.equal(restored.results[id], value);
     assert.equal(
       restored.phase,
-      ['human', 'cursed-spirit'].includes(nature) ? 'ready' : 'complete',
+      ['human', 'cursed-spirit'].includes(nature) ? 'ready' : 'revealed',
     );
     assert.equal(
       restored.stepId,
-      ['human', 'cursed-spirit'].includes(nature) ? 'technique-presence' : 'energy-reserve',
+      ['human', 'cursed-spirit'].includes(nature) ? 'technique-presence' : 'recovery',
     );
     assert.deepEqual(parseSavedGame(JSON.stringify(restored)), restored);
   }

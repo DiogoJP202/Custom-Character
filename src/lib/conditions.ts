@@ -7,6 +7,13 @@ import {
 } from '../data/wheels.ts';
 import { techniques, spiritTechniquePresence } from '../data/techniques.ts';
 import { masteryNotes, masteryReferences } from '../data/mastery.ts';
+import {
+  advancedAutomatic,
+  advancedForcedReason,
+  advancedResult,
+  advancedStageAvailable,
+  advancedWheel,
+} from './advanced.ts';
 
 export interface RuleContext {
   results: Record<string, string>;
@@ -30,6 +37,8 @@ export function eligibleTechniques(state: RuleContext): WheelOption[] {
 }
 
 export function isStageAvailable(wheel: WheelDefinition, state: RuleContext): boolean {
+  if (wheel.chapterId === 'advanced')
+    return advancedStageAvailable(wheel.id, state) && isWheelAvailable(wheel, state.results);
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(wheel.id)) {
     if (birthCondition(state) === 'physical-complete') return false;
     if (!['human', 'cursed-spirit'].includes(state.results.nature)) return false;
@@ -77,6 +86,7 @@ export function physicalAdjustment(stepId: string, state: RuleContext): WheelOpt
 }
 
 export function playableWheel(wheel: WheelDefinition, state: RuleContext): WheelDefinition {
+  if (wheel.chapterId === 'advanced') return advancedWheel(wheel, state);
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(wheel.id)) {
     const condition = birthCondition(state);
     const partial = condition === 'physical-partial';
@@ -139,11 +149,12 @@ export function forcedOutcome(wheel: WheelDefinition, state: RuleContext) {
   const option = options[0];
   if (state.results[wheel.id] && state.results[wheel.id] !== option.id) return undefined;
   const reason =
-    wheel.id === 'energy-reserve' && birthCondition(state) === 'physical-partial'
+    advancedForcedReason(wheel.id, state) ??
+    (wheel.id === 'energy-reserve' && birthCondition(state) === 'physical-partial'
       ? 'A Restrição Celestial física parcial limita a reserva a Muito baixa.'
       : wheel.id === 'energy-output' && birthCondition(state) === 'physical-partial'
         ? 'A energia residual da Restrição Celestial física parcial fixa o output efetivo em Muito baixo, na escala do jogo.'
-        : 'As condições anteriores deixam apenas uma opção compatível para esta etapa.';
+        : 'As condições anteriores deixam apenas uma opção compatível para esta etapa.');
   return { option, reason };
 }
 
@@ -153,6 +164,7 @@ export function resultDetails(stepId: string, state: RuleContext): WheelOption |
     definition &&
     playableWheel(definition, state).options.find((option) => option.id === state.results[stepId]);
   if (!option) return automaticOutcome(stepId, state);
+  if (definition?.chapterId === 'advanced') return advancedResult(stepId, option, state);
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(stepId)) {
     const partial = birthCondition(state) === 'physical-partial';
     const kokichi = birthCondition(state) === 'body-limited';
@@ -292,6 +304,8 @@ export function resultDetails(stepId: string, state: RuleContext): WheelOption |
 }
 
 export function automaticOutcome(stepId: string, state: RuleContext): WheelOption | undefined {
+  const advanced = advancedAutomatic(stepId, state);
+  if (advanced) return advanced;
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(stepId)) {
     const base = { id: 'not-applicable', shortLabel: 'NÃO SORTEADO', weight: 1, color: '#3d5663' };
     if (birthCondition(state) === 'physical-complete')

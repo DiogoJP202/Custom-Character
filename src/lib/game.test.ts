@@ -35,7 +35,7 @@ function finishPhysical(state: GameState): GameState {
   if (state.stepId === 'technique-presence')
     state = gameReducer(roll(state, 'no'), { type: 'continue' });
   for (const id of ['energy-control', 'energy-output']) {
-    if (state.phase === 'complete') break;
+    if (!['energy-control', 'energy-output'].includes(state.stepId)) break;
     assert.equal(state.stepId, id);
     state = gameReducer(
       roll(
@@ -47,6 +47,16 @@ function finishPhysical(state: GameState): GameState {
       ),
       { type: 'continue' },
     );
+  }
+  for (let i = 0; state.phase !== 'complete'; i++) {
+    assert.ok(i < 3);
+    const wheel = playableWheel(
+      wheels.find((wheel) => wheel.id === state.stepId)!,
+      state,
+    );
+    if (state.phase === 'ready') state = roll(state, wheel.options[0].id);
+    assert.equal(state.phase, 'revealed');
+    state = gameReducer(state, { type: 'continue' });
   }
   return state;
 }
@@ -62,7 +72,7 @@ test('every human lineage passes birth conditions, physical attributes and energ
     });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(Object.keys(complete.results).length, 10);
+    assert.equal(Object.keys(complete.results).length, 13);
     assert.equal(complete.results.lineage, lineage.id);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
     assert.deepEqual(gameReducer(complete, { type: 'reset' }), { ...initialState, phase: 'ready' });
@@ -75,8 +85,8 @@ test('all nonhuman natures skip lineage and birth and finish physical attributes
     assert.deepEqual(chapterTwo.results, { nature });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(complete.stepId, nature === 'cursed-spirit' ? 'energy-output' : 'energy-reserve');
-    assert.equal(Object.keys(complete.results).length, nature === 'cursed-spirit' ? 8 : 5);
+    assert.equal(complete.stepId, 'equipment');
+    assert.equal(Object.keys(complete.results).length, nature === 'cursed-spirit' ? 10 : 7);
     assert.equal(complete.results.lineage, undefined);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
   }

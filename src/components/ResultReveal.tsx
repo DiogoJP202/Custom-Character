@@ -18,6 +18,7 @@ function ResultContent({
   const isProficiency = reference?.topic === 'proficiency';
   const isTechnique = !!result.technique || isProficiency;
   const isEnergy = reference?.topic === 'energy';
+  const isResource = reference?.topic === 'resource';
   const representativeFeat = reference?.feats[0];
   return (
     <>
@@ -39,8 +40,12 @@ function ResultContent({
           </h2>
           {reference && (
             <p className="reference-version">
-              {isEnergy ? (
-                'Escala qualitativa do jogo'
+              {isEnergy || isResource ? (
+                isResource ? (
+                  'Requisitos e uso do recurso'
+                ) : (
+                  'Escala qualitativa do jogo'
+                )
               ) : (
                 <>
                   {result.adjustment && 'Referência sorteada · '}
@@ -59,28 +64,42 @@ function ResultContent({
               Consequência automática: {automaticReason} Não é necessário girar esta etapa.
             </p>
           )}
-          <h3>{isTechnique ? 'Como funciona' : reference ? 'No seu personagem' : 'Descrição'}</h3>
+          <h3>
+            {isTechnique || isResource
+              ? 'Como funciona'
+              : reference
+                ? 'No seu personagem'
+                : 'Descrição'}
+          </h3>
           {result.adjustment && <p className="result-adjustment">{result.adjustment.label}</p>}
           <p>{result.description}</p>
           {reference && (
             <p className="comparison-note">
-              {isProficiency
-                ? 'Proficiência não elimina requisitos, custos ou recursos ausentes.'
-                : isTechnique
-                  ? 'Receber a técnica não concede o domínio demonstrado pelo personagem.'
-                  : isEnergy
-                    ? 'O exemplo ilustra o conceito; não equivale ao nível sorteado.'
-                    : 'Interpretação para o jogo, não uma equivalência exata.'}
+              {isResource
+                ? 'O exemplo da obra não concede a experiência do personagem.'
+                : isProficiency
+                  ? 'Proficiência não elimina requisitos, custos ou recursos ausentes.'
+                  : isTechnique
+                    ? 'Receber a técnica não concede o domínio demonstrado pelo personagem.'
+                    : isEnergy
+                      ? 'O exemplo ilustra o conceito; não equivale ao nível sorteado.'
+                      : 'Interpretação para o jogo, não uma equivalência exata.'}
             </p>
           )}
         </section>
         {reference?.initialUse && (
           <section className="representative-feat">
-            <h3>{isProficiency ? 'Aplicações possíveis' : 'Uso inicial'}</h3>
+            <h3>
+              {isResource
+                ? 'Uso com seus resultados'
+                : isProficiency
+                  ? 'Aplicações possíveis'
+                  : 'Uso inicial'}
+            </h3>
             <p>{reference.initialUse}</p>
           </section>
         )}
-        {representativeFeat && !result.adjustment && !isTechnique && !isEnergy && (
+        {representativeFeat && !result.adjustment && !isTechnique && !isEnergy && !isResource && (
           <section className="representative-feat" aria-label="Feito representativo">
             <h3>Na obra</h3>
             <p>{representativeFeat.description}</p>
@@ -95,7 +114,7 @@ function ResultContent({
             <div className="reference-details-body">
               {result.notes && <p className="feat-context">{result.notes}</p>}
               {result.sources?.map((source) => (
-                <p key={source.url}>
+                <p key={`${source.url}-${source.label}`}>
                   <a
                     className="reference-source"
                     href={source.url}
@@ -110,7 +129,7 @@ function ResultContent({
                 <>
                   <section className="reference-feats" aria-label="Feitos e contexto">
                     <h3>Feitos e contexto</h3>
-                    {isEnergy && (
+                    {(isEnergy || isResource) && (
                       <p className="reference-version">
                         {reference.character} · {reference.version}
                       </p>
@@ -138,7 +157,9 @@ function ResultContent({
                     <p>{reference.limitations}</p>
                   </section>
                   <p className="reference-disclaimer">
-                    {isEnergy ? (
+                    {isResource ? (
+                      'O resultado registra um recurso neste cenário de fã. Requisitos de energia, corpo, treinamento e ativação continuam valendo. Não concede domínio de armas, técnicas adicionais ou vitória garantida. As fontes oficiais indicam cenas e capítulos de leitura; as sinopses não detalham todas as condições.'
+                    ) : isEnergy ? (
                       'Controle, output e reserva são capacidades distintas. Esta escala e suas combinações são abstrações do jogo; os exemplos não transferem técnicas, características especiais ou a experiência dos personagens. As fontes indicam o contexto oficial, sem classificar os níveis desta escala.'
                     ) : isProficiency ? (
                       'A proficiência descreve aplicações acessíveis, não todo o repertório do personagem de referência. Energia, condições de ativação, fisiologia e recursos necessários continuam limitando o uso. Não concede domínios ou aplicações reversas.'

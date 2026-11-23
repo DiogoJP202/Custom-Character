@@ -29,6 +29,7 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 - Capítulo 4 — Reserva: energia amaldiçoada ou rolloluca, conforme a natureza.
 - Capítulo 5 — Técnicas: presença (humanos 80/20; espíritos 90/10) e, quando elegível, técnica específica. Percentuais de gameplay.
 - Capítulo 6 — Controle, output e proficiência: precisão do fluxo, liberação instantânea e uso da técnica, com resumo contextual na ficha.
+- Capítulo 7 — Recursos avançados: recuperação compatível com a natureza, defesa ant domínio e equipamento, sem sistema de combate.
 - Sorteio ponderado, segmentos proporcionais e parada no centro do resultado.
 - Uma rolagem por atributo, revelação, progressão e ficha parcial. Etapas com uma única opção compatível registram a consequência automaticamente, sem consumir aleatoriedade; a revelação aguarda Continuar.
 - Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato v3). Um giro é registrado antes da animação; recarregar revela o mesmo resultado. Partidas v1/v2 preservam os resultados: humanos sem atributos físicos passam pela nova roleta de nascimento; quando já havia atributos físicos, a condição fica explicitamente **não registrada**, sem sorteio retroativo. Fichas antigas concluídas retomam na reserva.
@@ -79,6 +80,20 @@ Na restrição completa, as três etapas são ignoradas e a ficha registra ausê
 Espíritos usam explicações de controle/output próprias de sua natureza. Cadáveres e simurianos mantêm suas reservas e recebem avisos de catálogo ainda insuficiente para as três capacidades, sem presumir fisiologia humana ou incapacidade canônica; a ficha simuriana usa rolloluca. Fichas v3 concluídas de humanos/espíritos retomam em Controle sem novos resultados atribuídos silenciosamente. A chave e o formato do save continuam os mesmos.
 
 Referências: [Yuji e Todo, episódio 16](https://jujutsukaisen.jp/episodes/16.php); [output de Ryu, perfil oficial](https://jujutsukaisen.jp/character/) e [Sendai, episódio 59](https://jujutsukaisen.jp/episodes/59.php); [alcance/output de Kokichi, perfil oficial](https://jujutsukaisen.jp/character/category2.php). São exemplos de conceitos, sem equivalência entre personagens e níveis da escala. Os feitos e limites de cada técnica continuam associados às fontes anteriores.
+
+### Recursos avançados
+
+`src/data/advanced.ts` guarda os resultados e as referências; `src/lib/advanced.ts` trata as regras específicas, chamadas por `conditions.ts`. O fluxo e o formato v3 continuam usando o catálogo existente. Fichas antigas concluídas retomam no primeiro recurso compatível, sem perder resultados; consequências determinísticas são reveladas antes de Continuar.
+
+Humanos elegíveis sorteiam RCT em 65/22/10/3: nenhuma, própria limitada, própria avançada ou cura de terceiros. O repertório sorteado permanece mesmo quando controle, estoque ou output reduzem a execução efetiva. RCT não concede Reversão de Técnica Amaldiçoada, ressurreição, cura universal ou remoção da condição de Kokichi. A restrição completa ignora recursos dependentes de energia própria; na parcial, RCT e defesa ficam em nenhuma, automaticamente, como regra conservadora de gameplay para a energia residual.
+
+Defesas humanas: nenhuma 60, Domínio Simples 23, Cesto de Vime Oco 12, Emoção da Flor Cadente 5. Flor Cadente exige Gojo/Zen’in/Kamo; as opções são filtradas antes da normalização. Domínio Simples inclui formação após a liberação da transmissão no cap. 269, usando uma configuração inicial fixa como a de Miwa. Cesto exige selo para ativar/sustentar; Flor Cadente reage ao contato sem criar uma barreira. Nenhuma defesa garante vitória. Aprendizado não é concedido por controle excepcional sozinho.
+
+Espíritos têm sua própria distribuição de recomposição (20/60/20), sem receber RCT humana. Cadáveres recebem registro de reparação específica; simurianos, ausência de cura especial atribuída, sem supor fisiologia humana. Defesas humanas não são distribuídas indiscriminadamente. Todas as naturezas chegam à roleta física de equipamento, com requisitos de corpo e empunhadura explícitos.
+
+Equipamento: nenhum 20, convencional 20, ferramenta comum 30, categoria elevada 20, Nuvem Brincalhona 5, Lança Invertida do Céu 3, Katana Divisora de Almas 2. Comum/elevada são faixas do jogo, sem atribuir grau oficial ou técnica inventada a itens genéricos. Os três artefatos nomeados representam posse hipotética do original em cenários independentes de fã, nunca fabricação de réplicas ou afirmação de disponibilidade na cronologia oficial. Energia imbuída não aumenta a energia do portador. O efeito pleno da Katana fica bloqueado porque a percepção exigida ainda não é registrada; força, restrição ou controle não a concedem automaticamente.
+
+Fontes de leitura: perfis oficiais de Shoko (RCT/terceiros), episódios 19/39 (ferramentas e Hanami/Toji), 27/28 (Lança e RCT de Gojo), 38 (Ui Ui e Naobito), 58 (Reggie); mangá, capítulos 108, 171, 198, 266 e 269. As sinopses oficiais verificam o contexto das cenas, sem detalhar toda a mecânica. Os links ficam nos resultados. Não foram atribuídos cura universal não humana, percepção de almas, cápsulas de Mechamaru, treinamento de armas ou outras propriedades sem requisitos representados.
 
 `src/lib/wheel.ts` concentra a geometria e o sorteio. `src/lib/game.ts` controla estados e persistência. Os componentes `Wheel`, `ResultReveal` e `CharacterSheet` apresentam o jogo; `App` conecta as interações.
 

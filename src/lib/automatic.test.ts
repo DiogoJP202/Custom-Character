@@ -74,13 +74,15 @@ test('single-option handling follows the catalog for new stages and restores the
   const completed: GameState = {
     version: 3,
     phase: 'complete',
-    stepId: 'energy-reserve',
+    stepId: 'equipment',
     results: {
       nature: 'simurian',
       strength: 'megumi',
       speed: 'megumi',
       endurance: 'panda',
       'energy-reserve': 'common',
+      recovery: 'natural-recovery',
+      equipment: 'none',
     },
   };
   assert.deepEqual(parseSavedGame(JSON.stringify(completed)), completed);

@@ -26,13 +26,15 @@ test('the actual production reducer rejects retries even with a forged testMode 
   const saved = {
     version: 3,
     phase: 'complete',
-    stepId: 'energy-reserve',
+    stepId: 'equipment',
     results: {
       nature: 'simurian',
       strength: 'megumi',
       speed: 'toji',
       endurance: 'hanami',
       'energy-reserve': 'immense',
+      recovery: 'natural-recovery',
+      equipment: 'none',
     },
   };
   const state = parseSavedGame(JSON.stringify(saved));
@@ -47,7 +49,7 @@ test('the actual production reducer rejects retries even with a forged testMode 
     JSON.stringify({
       version: 3,
       phase: 'complete',
-      stepId: 'technique-proficiency',
+      stepId: 'equipment',
       results: {
         nature: 'human',
         lineage: 'gojo',
@@ -61,6 +63,9 @@ test('the actual production reducer rejects retries even with a forged testMode 
         'energy-control': 'exceptional',
         'energy-output': 'high',
         'technique-proficiency': 'exceptional',
+        recovery: 'no-rct',
+        'anti-domain': 'none',
+        equipment: 'none',
       },
     }),
   );
@@ -71,6 +76,9 @@ test('the actual production reducer rejects retries even with a forged testMode 
     'energy-control',
     'energy-output',
     'technique-proficiency',
+    'recovery',
+    'anti-domain',
+    'equipment',
   ])
     assert.strictEqual(gameReducer(human, { type: 'retry', stepId, testMode: true }), human);
 });

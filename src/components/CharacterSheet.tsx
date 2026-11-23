@@ -7,6 +7,7 @@ import {
   wheelForStep,
 } from '../lib/conditions.ts';
 import type { GameState } from '../lib/game.ts';
+import { advancedSummary } from '../lib/advanced.ts';
 
 export default function CharacterSheet({
   state,
@@ -22,6 +23,7 @@ export default function CharacterSheet({
   const count = Object.keys(visibleResults).length;
   const visibleState = { ...state, results: visibleResults };
   const summary = energySummary(visibleState);
+  const resourceSummary = advancedSummary(visibleState);
   const automaticCount = wheels.filter(
     (wheel) => visibleResults[wheel.id] && forcedOutcome(wheel, visibleState),
   ).length;
@@ -104,6 +106,15 @@ export default function CharacterSheet({
             <div className="sheet-context" aria-label="Resumo das capacidades">
               <h4>No conjunto</h4>
               {summary.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              <small>Interpretação qualitativa do jogo.</small>
+            </div>
+          )}
+          {chapter.id === 'advanced' && resourceSummary.length > 0 && (
+            <div className="sheet-context" aria-label="Resumo dos recursos avançados">
+              <h4>Recursos no conjunto</h4>
+              {resourceSummary.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
               <small>Interpretação qualitativa do jogo.</small>

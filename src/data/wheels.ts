@@ -3,6 +3,7 @@ import type { ReferenceSource } from './references.ts';
 import { birthOptions, energyOptions, energyNotes } from './special.ts';
 import { techniques, humanTechniquePresence } from './techniques.ts';
 import { controlOptions, outputOptions, proficiencyOptions, masteryNotes } from './mastery.ts';
+import { recoveryOptions, antiDomainOptions, equipmentOptions } from './advanced.ts';
 
 export const chapters = [
   { id: 'origin', name: 'Origem', hubLabel: 'ORIGEM' },
@@ -11,6 +12,7 @@ export const chapters = [
   { id: 'energy', name: 'Energia', hubLabel: 'ENERGIA' },
   { id: 'techniques', name: 'Técnicas amaldiçoadas', hubLabel: 'TÉCNICA' },
   { id: 'mastery', name: 'Controle, output e proficiência', hubLabel: 'USO' },
+  { id: 'advanced', name: 'Recursos avançados', hubLabel: 'RECURSOS' },
 ] as const;
 
 export interface WheelOption {
@@ -386,6 +388,29 @@ export const wheels: WheelDefinition[] = [
     availableWhen: { stepId: 'technique-presence', optionId: 'yes' },
     unavailableLabel: 'Não se aplica — sem técnica inata',
     options: proficiencyOptions.map((option) => ({ ...option, notes: masteryNotes })),
+  },
+  {
+    id: 'recovery',
+    chapterId: 'advanced',
+    name: 'Técnica Reversa (RCT)',
+    description:
+      'Sorteie o aprendizado de cura por energia positiva. Não é Reversão da Técnica Amaldiçoada.',
+    options: recoveryOptions,
+  },
+  {
+    id: 'anti-domain',
+    chapterId: 'advanced',
+    name: 'Defesa ant domínio',
+    description: 'Sorteie um recurso defensivo aprendido, sem receber Expansão de Domínio.',
+    options: antiDomainOptions,
+  },
+  {
+    id: 'equipment',
+    chapterId: 'advanced',
+    name: 'Equipamento',
+    description:
+      'Sorteie o equipamento disponível. Posse, empunhadura, domínio e efeitos são avaliados separadamente.',
+    options: equipmentOptions,
   },
 ];
 
