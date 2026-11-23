@@ -19,10 +19,13 @@ function ResultContent({
   const isTechnique = !!result.technique || isProficiency;
   const isEnergy = reference?.topic === 'energy';
   const isResource = reference?.topic === 'resource';
+  const isDomain = !!result.domain;
   const representativeFeat = reference?.feats[0];
   return (
     <>
-      <header className={`result-header ${reference ? 'has-reference' : ''}`}>
+      <header
+        className={`result-header ${reference ? 'has-reference' : ''} ${isDomain ? 'domain-result-header' : ''}`}
+      >
         {reference && (
           <div className="reference-print" aria-hidden="true">
             <i />
@@ -55,6 +58,14 @@ function ResultContent({
               )}
             </p>
           )}
+          {result.domain && (
+            <p className="domain-manifestation">
+              {result.domain.relatedTechnique} ·{' '}
+              {result.domain.manifestation === 'incomplete'
+                ? 'Manifestação incompleta documentada'
+                : 'Manifestação completa documentada'}
+            </p>
+          )}
         </div>
       </header>
       <div className={`result-body ${reference ? '' : 'simple-result'}`}>
@@ -65,7 +76,7 @@ function ResultContent({
             </p>
           )}
           <h3>
-            {isTechnique || isResource
+            {isTechnique || isResource || isDomain
               ? 'Como funciona'
               : reference
                 ? 'No seu personagem'
@@ -75,36 +86,45 @@ function ResultContent({
           <p>{result.description}</p>
           {reference && (
             <p className="comparison-note">
-              {isResource
-                ? 'O exemplo da obra não concede a experiência do personagem.'
-                : isProficiency
-                  ? 'Proficiência não elimina requisitos, custos ou recursos ausentes.'
-                  : isTechnique
-                    ? 'Receber a técnica não concede o domínio demonstrado pelo personagem.'
-                    : isEnergy
-                      ? 'O exemplo ilustra o conceito; não equivale ao nível sorteado.'
-                      : 'Interpretação para o jogo, não uma equivalência exata.'}
+              {isDomain
+                ? 'Acesso à expansão não transfere a perícia do personagem de referência.'
+                : isResource
+                  ? 'O exemplo da obra não concede a experiência do personagem.'
+                  : isProficiency
+                    ? 'Proficiência não elimina requisitos, custos ou recursos ausentes.'
+                    : isTechnique
+                      ? 'Receber a técnica não concede o domínio demonstrado pelo personagem.'
+                      : isEnergy
+                        ? 'O exemplo ilustra o conceito; não equivale ao nível sorteado.'
+                        : 'Interpretação para o jogo, não uma equivalência exata.'}
             </p>
           )}
         </section>
         {reference?.initialUse && (
           <section className="representative-feat">
             <h3>
-              {isResource
-                ? 'Uso com seus resultados'
-                : isProficiency
-                  ? 'Aplicações possíveis'
-                  : 'Uso inicial'}
+              {isDomain
+                ? 'Capacidade efetiva de utilização'
+                : isResource
+                  ? 'Uso com seus resultados'
+                  : isProficiency
+                    ? 'Aplicações possíveis'
+                    : 'Uso inicial'}
             </h3>
             <p>{reference.initialUse}</p>
           </section>
         )}
-        {representativeFeat && !result.adjustment && !isTechnique && !isEnergy && !isResource && (
-          <section className="representative-feat" aria-label="Feito representativo">
-            <h3>Na obra</h3>
-            <p>{representativeFeat.description}</p>
-          </section>
-        )}
+        {representativeFeat &&
+          !result.adjustment &&
+          !isTechnique &&
+          !isEnergy &&
+          !isResource &&
+          !isDomain && (
+            <section className="representative-feat" aria-label="Feito representativo">
+              <h3>Na obra</h3>
+              <p>{representativeFeat.description}</p>
+            </section>
+          )}
         {(reference || result.notes || result.sources?.length) && (
           <details className="reference-details">
             <summary>
@@ -153,11 +173,19 @@ function ResultContent({
                     </ul>
                   </section>
                   <section className="comparison-limits">
-                    <h3>{isProficiency ? 'Condições da técnica' : 'Limites da comparação'}</h3>
+                    <h3>
+                      {isDomain
+                        ? 'Limites da expansão'
+                        : isProficiency
+                          ? 'Condições da técnica'
+                          : 'Limites da comparação'}
+                    </h3>
                     <p>{reference.limitations}</p>
                   </section>
                   <p className="reference-disclaimer">
-                    {isResource ? (
+                    {isDomain ? (
+                      'A manifestação conserva as propriedades documentadas. As condições sorteadas afetam sua execução, sem criar versões alternativas, garantir vitória ou conceder repertório, energia e características adicionais.'
+                    ) : isResource ? (
                       'O resultado registra um recurso neste cenário de fã. Requisitos de energia, corpo, treinamento e ativação continuam valendo. Não concede domínio de armas, técnicas adicionais ou vitória garantida. As fontes oficiais indicam cenas e capítulos de leitura; as sinopses não detalham todas as condições.'
                     ) : isEnergy ? (
                       'Controle, output e reserva são capacidades distintas. Esta escala e suas combinações são abstrações do jogo; os exemplos não transferem técnicas, características especiais ou a experiência dos personagens. As fontes indicam o contexto oficial, sem classificar os níveis desta escala.'

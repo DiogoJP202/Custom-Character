@@ -49,7 +49,7 @@ test('the actual production reducer rejects retries even with a forged testMode 
     JSON.stringify({
       version: 3,
       phase: 'complete',
-      stepId: 'equipment',
+      stepId: 'barrier-knowledge',
       results: {
         nature: 'human',
         lineage: 'gojo',
@@ -66,6 +66,7 @@ test('the actual production reducer rejects retries even with a forged testMode 
         recovery: 'no-rct',
         'anti-domain': 'none',
         equipment: 'none',
+        'barrier-knowledge': 'advanced',
       },
     }),
   );
@@ -79,6 +80,26 @@ test('the actual production reducer rejects retries even with a forged testMode 
     'recovery',
     'anti-domain',
     'equipment',
+    'barrier-knowledge',
   ])
     assert.strictEqual(gameReducer(human, { type: 'retry', stepId, testMode: true }), human);
+  const withDomain = parseSavedGame(
+    JSON.stringify({
+      ...human,
+      stepId: 'domain-expansion',
+      results: {
+        ...human.results,
+        lineage: 'zenin',
+        'innate-technique': 'ten-shadows',
+        'domain-expansion': 'chimera-shadow-garden',
+      },
+    }),
+  );
+  assert.equal(withDomain.phase, 'complete');
+  assert.equal(withDomain.results['domain-expansion'], 'chimera-shadow-garden');
+  for (const stepId of ['barrier-knowledge', 'domain-expansion'])
+    assert.strictEqual(
+      gameReducer(withDomain, { type: 'retry', stepId, testMode: true }),
+      withDomain,
+    );
 });

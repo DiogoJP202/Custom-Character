@@ -8,6 +8,7 @@ import {
 } from '../lib/conditions.ts';
 import type { GameState } from '../lib/game.ts';
 import { advancedSummary } from '../lib/advanced.ts';
+import { domainSummary } from '../lib/domains.ts';
 
 export default function CharacterSheet({
   state,
@@ -24,6 +25,7 @@ export default function CharacterSheet({
   const visibleState = { ...state, results: visibleResults };
   const summary = energySummary(visibleState);
   const resourceSummary = advancedSummary(visibleState);
+  const expansionSummary = domainSummary(visibleState);
   const automaticCount = wheels.filter(
     (wheel) => visibleResults[wheel.id] && forcedOutcome(wheel, visibleState),
   ).length;
@@ -81,6 +83,15 @@ export default function CharacterSheet({
                                 Referência: {result.reference.character}
                               </small>
                             )}
+                            {result.domain && (
+                              <small className="sheet-reference">
+                                {result.domain.manifestation === 'incomplete'
+                                  ? 'Manifestação incompleta'
+                                  : 'Manifestação completa'}
+                                {' · '}
+                                {result.reference?.character}
+                              </small>
+                            )}
                             {forcedOutcome(wheel, visibleState) && (
                               <small className="sheet-reference">Consequência automática</small>
                             )}
@@ -118,6 +129,15 @@ export default function CharacterSheet({
                 <p key={paragraph}>{paragraph}</p>
               ))}
               <small>Interpretação qualitativa do jogo.</small>
+            </div>
+          )}
+          {chapter.id === 'domains' && expansionSummary.length > 0 && (
+            <div className="sheet-context" aria-label="Resumo de barreiras e domínio">
+              <h4>Barreiras e manifestação</h4>
+              {expansionSummary.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              <small>Capacidade efetiva: interpretação qualitativa do jogo.</small>
             </div>
           )}
         </section>

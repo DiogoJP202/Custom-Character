@@ -4,6 +4,7 @@ import { birthOptions, energyOptions, energyNotes } from './special.ts';
 import { techniques, humanTechniquePresence } from './techniques.ts';
 import { controlOptions, outputOptions, proficiencyOptions, masteryNotes } from './mastery.ts';
 import { recoveryOptions, antiDomainOptions, equipmentOptions } from './advanced.ts';
+import { barrierOptions, domainOptions } from './domains.ts';
 
 export const chapters = [
   { id: 'origin', name: 'Origem', hubLabel: 'ORIGEM' },
@@ -13,6 +14,7 @@ export const chapters = [
   { id: 'techniques', name: 'Técnicas amaldiçoadas', hubLabel: 'TÉCNICA' },
   { id: 'mastery', name: 'Controle, output e proficiência', hubLabel: 'USO' },
   { id: 'advanced', name: 'Recursos avançados', hubLabel: 'RECURSOS' },
+  { id: 'domains', name: 'Expansão de Domínio', hubLabel: 'DOMÍNIO' },
 ] as const;
 
 export interface WheelOption {
@@ -25,6 +27,11 @@ export interface WheelOption {
   reference?: CharacterReference;
   notes?: string;
   sources?: ReferenceSource[];
+  domain?: {
+    techniqueId: string;
+    relatedTechnique: string;
+    manifestation: 'incomplete' | 'complete';
+  };
   technique?: {
     nature: 'human' | 'cursed-spirit';
     lineage?: string;
@@ -411,6 +418,22 @@ export const wheels: WheelDefinition[] = [
     description:
       'Sorteie o equipamento disponível. Posse, empunhadura, domínio e efeitos são avaliados separadamente.',
     options: equipmentOptions,
+  },
+  {
+    id: 'barrier-knowledge',
+    chapterId: 'domains',
+    name: 'Conhecimento de barreiras',
+    description:
+      'Sorteie sua formação em barreiras. Conhecimento não concede uma expansão ou defesa especializada.',
+    options: barrierOptions,
+  },
+  {
+    id: 'domain-expansion',
+    chapterId: 'domains',
+    name: 'Expansão de Domínio',
+    description:
+      'Sorteie o acesso à expansão documentada da sua técnica: 65% sem manifestação, 35% com acesso. A execução depende dos seus recursos.',
+    options: domainOptions,
   },
 ];
 

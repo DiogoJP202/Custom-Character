@@ -655,6 +655,17 @@ h1 {
   position: relative;
   z-index: 1;
 }
+.result-header.domain-result-header {
+  border-left-color: var(--red);
+  border-bottom: 3px solid var(--red);
+}
+.domain-manifestation {
+  margin: 14px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: #73303a;
+}
 /* Original print composition: cropped panels and offset ink, without character art. */
 .reference-print {
   position: absolute;

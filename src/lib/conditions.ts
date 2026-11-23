@@ -7,6 +7,7 @@ import {
 } from '../data/wheels.ts';
 import { techniques, spiritTechniquePresence } from '../data/techniques.ts';
 import { masteryNotes, masteryReferences } from '../data/mastery.ts';
+import { domainAutomatic, domainResult, domainStageAvailable, domainWheel } from './domains.ts';
 import {
   advancedAutomatic,
   advancedForcedReason,
@@ -37,6 +38,8 @@ export function eligibleTechniques(state: RuleContext): WheelOption[] {
 }
 
 export function isStageAvailable(wheel: WheelDefinition, state: RuleContext): boolean {
+  if (wheel.chapterId === 'domains')
+    return domainStageAvailable(wheel.id, state) && isWheelAvailable(wheel, state.results);
   if (wheel.chapterId === 'advanced')
     return advancedStageAvailable(wheel.id, state) && isWheelAvailable(wheel, state.results);
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(wheel.id)) {
@@ -86,6 +89,7 @@ export function physicalAdjustment(stepId: string, state: RuleContext): WheelOpt
 }
 
 export function playableWheel(wheel: WheelDefinition, state: RuleContext): WheelDefinition {
+  if (wheel.chapterId === 'domains') return domainWheel(wheel, state);
   if (wheel.chapterId === 'advanced') return advancedWheel(wheel, state);
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(wheel.id)) {
     const condition = birthCondition(state);
@@ -164,6 +168,7 @@ export function resultDetails(stepId: string, state: RuleContext): WheelOption |
     definition &&
     playableWheel(definition, state).options.find((option) => option.id === state.results[stepId]);
   if (!option) return automaticOutcome(stepId, state);
+  if (definition?.chapterId === 'domains') return domainResult(stepId, option, state);
   if (definition?.chapterId === 'advanced') return advancedResult(stepId, option, state);
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(stepId)) {
     const partial = birthCondition(state) === 'physical-partial';
@@ -304,6 +309,8 @@ export function resultDetails(stepId: string, state: RuleContext): WheelOption |
 }
 
 export function automaticOutcome(stepId: string, state: RuleContext): WheelOption | undefined {
+  const domain = domainAutomatic(stepId, state);
+  if (domain) return domain;
   const advanced = advancedAutomatic(stepId, state);
   if (advanced) return advanced;
   if (['energy-control', 'energy-output', 'technique-proficiency'].includes(stepId)) {

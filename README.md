@@ -99,6 +99,16 @@ Fontes de leitura: perfis oficiais de Shoko (RCT/terceiros), episódios 19/39 (f
 
 Os detalhes de qualquer resultado podem ser reabertos pela ficha, sem novo sorteio. A revelação resume a capacidade prática e um feito; os contextos, fontes e limites ficam numa seção expansível. A composição editorial é original, sem artes oficiais ou hotlink. Barlow Condensed e IBM Plex Sans são servidas localmente; suas licenças OFL estão em `public/fonts/`.
 
+### Expansão de Domínio
+
+O capítulo 8 usa `src/data/domains.ts` e `src/lib/domains.ts`. Humanos com energia e espíritos sorteiam formação em barreiras (25/35/25/15), separada de controle e defesas ant domínio. A restrição parcial permite conhecimento, mas bloqueia uma expansão efetiva; a completa pula as duas etapas. Cadáveres e simurianos mantêm os recursos anteriores, sem extrapolar barreiras humanas para suas naturezas.
+
+Só Dez Sombras, Transfiguração Ociosa e Chamas de Jogo habilitam a roleta 65/35 de expansão. O resultado positivo já identifica sua única manifestação documentada, sem um segundo giro garantido. Jardim da Sombra Quimérica permanece incompleto, depende de suporte espacial compatível e não recebe acerto garantido, todos os shikigamis ou Mahoraga. Autoencarnação da Perfeição e Caixão da Montanha de Ferro preservam suas manifestações completas; recursos insuficientes tornam a execução não confiável, sem inventar versões incompletas. Os limites de uso são interpretações conservadoras do jogo, não limiares oficiais de energia.
+
+Não são atribuídos Vazio Infinito sem modelar Seis Olhos, domínio de Yorozu à Construção inicial de Mai, domínio do espírito Naoya à Projeção humana ou domínio de Kenjaku como capacidade universal de Geto. Hanami e as demais técnicas não recebem expansões com propriedades insuficientemente documentadas. Essa ausência é uma limitação do catálogo. Fontes: [episódio 7](https://jujutsukaisen.jp/episodes/07.php), [13](https://jujutsukaisen.jp/episodes/13.php), [23](https://jujutsukaisen.jp/episodes/23.php), [58](https://jujutsukaisen.jp/episodes/58.php); mangá, capítulos 15–16, 29–30, 58 e 170–172. As sinopses verificam o contexto; os capítulos/cenas indicados são a referência para os detalhes.
+
+Saves v3 concluídos retomam no primeiro estágio novo elegível, sem sorteios na restauração; os IDs e pesos anteriores continuam intactos. O workflow `.github/workflows/ci.yml` executa instalação, testes e build em Node 24 nos pushes e pull requests.
+
 ## Referências e limites de cânone
 
 Este é um projeto de fãs. **Comparações de desempenho, probabilidades e combinações são abstrações do jogo, não classificações oficiais.** Referências físicas não concedem técnicas, armas, regeneração ou a natureza do personagem citado. Megumi, Panda, Maki, Todo, Yuji e Hanami são considerados no arco do Intercâmbio; Toji, em Shibuya. “Sem clã conhecido” descreve a ausência de vínculo estabelecido pelo jogo, não uma classificação oficial.

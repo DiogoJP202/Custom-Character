@@ -60,7 +60,7 @@ function advance(state: GameState, optionId: string): GameState {
   return gameReducer(state, { type: 'continue' });
 }
 function finish(state: GameState, choices: Record<string, string> = {}): GameState {
-  for (let i = 0; state.phase !== 'complete'; i++) {
+  for (let i = 0; state.phase !== 'complete' && ids.includes(state.stepId); i++) {
     assert.ok(i < ids.length);
     const options = playableWheel(stage(state.stepId), state).options;
     state = advance(state, choices[state.stepId] ?? options[0].id);
@@ -76,8 +76,8 @@ test('humans without innate techniques can learn RCT and defenses and receive eq
     'anti-domain': 'simple-domain',
     equipment: 'playful-cloud',
   });
-  assert.equal(state.phase, 'complete');
-  assert.equal(state.stepId, 'equipment');
+  assert.equal(state.phase, 'ready');
+  assert.equal(state.stepId, 'barrier-knowledge');
   for (const [id, value] of Object.entries(old.results)) assert.equal(state.results[id], value);
   assert.equal(state.results['technique-presence'], 'no');
   assert.equal(state.results['innate-technique'], undefined);
