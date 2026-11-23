@@ -82,7 +82,8 @@ test('human lineages admit only their hereditary techniques without guaranteeing
       const ready = advance(state, 'yes');
       assert.equal(ready.stepId, 'innate-technique');
       const complete = advance(ready, technique.id);
-      assert.equal(complete.phase, 'complete');
+      assert.equal(complete.phase, 'ready');
+      assert.equal(complete.stepId, 'energy-control');
       assert.equal(complete.results['innate-technique'], technique.id);
       assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
       assert.equal(
@@ -91,7 +92,8 @@ test('human lineages admit only their hereditary techniques without guaranteeing
       );
     }
     const noTechnique = advance(state, 'no');
-    assert.equal(noTechnique.phase, 'complete');
+    assert.equal(noTechnique.phase, 'ready');
+    assert.equal(noTechnique.stepId, 'energy-control');
     assert.equal(noTechnique.results['innate-technique'], undefined);
     assert.equal(isStageAvailable(stage('innate-technique'), noTechnique), false);
   }
@@ -175,10 +177,10 @@ test('spirits have their own 90/10 distribution and exclusive compatible techniq
   assert.ok(pool.length >= 3);
   for (const option of pool) {
     assert.equal(option.technique?.nature, 'cursed-spirit');
-    assert.equal(advance(ready, option.id).phase, 'complete');
+    assert.equal(advance(ready, option.id).stepId, 'energy-control');
   }
   assert.strictEqual(gameReducer(ready, { type: 'spin', optionId: 'blood-manipulation' }), ready);
-  assert.equal(advance(state, 'no').phase, 'complete');
+  assert.equal(advance(state, 'no').stepId, 'energy-control');
 });
 
 test('independent corpses and simurians skip human technique rules and record catalog limits', () => {

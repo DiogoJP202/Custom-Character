@@ -28,6 +28,7 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 - Capítulo 3 — Atributos Físicos: Força física, Velocidade e Resistência para todas as naturezas.
 - Capítulo 4 — Reserva: energia amaldiçoada ou rolloluca, conforme a natureza.
 - Capítulo 5 — Técnicas: presença (humanos 80/20; espíritos 90/10) e, quando elegível, técnica específica. Percentuais de gameplay.
+- Capítulo 6 — Controle, output e proficiência: precisão do fluxo, liberação instantânea e uso da técnica, com resumo contextual na ficha.
 - Sorteio ponderado, segmentos proporcionais e parada no centro do resultado.
 - Uma rolagem por atributo, revelação, progressão e ficha parcial. Etapas com uma única opção compatível registram a consequência automaticamente, sem consumir aleatoriedade; a revelação aguarda Continuar.
 - Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato v3). Um giro é registrado antes da animação; recarregar revela o mesmo resultado. Partidas v1/v2 preservam os resultados: humanos sem atributos físicos passam pela nova roleta de nascimento; quando já havia atributos físicos, a condição fica explicitamente **não registrada**, sem sorteio retroativo. Fichas antigas concluídas retomam na reserva.
@@ -53,7 +54,7 @@ Humanos passam por Linhagem e Condição especial antes dos atributos físicos; 
 
 A escala de reserva é uma abstração comum de gameplay, com explicação específica para humanos, espíritos, corpos artificiais e rolloluca simuriana. Não representa equivalência biológica ou quantitativa entre naturezas. O termo rolloluca segue o briefing; detalhes de sua fisiologia não foram inferidos de wikis ou de capítulos indisponíveis. Yuta contextualiza grandes reservas no cap. 140, sem conceder Rika ou técnica. Os links para catálogos oficiais são referências de leitura, não transcrições desses capítulos.
 
-Os pesos do [PR #1 de rebalanceamento](https://github.com/DiogoJP202/Custom-Character/pull/1), confirmado aberto em 23/11/2026, foram aplicados diretamente ao catálogo atual, sem merge do PR nem substituição dos arquivos antigos.
+O [PR #1 de rebalanceamento](https://github.com/DiogoJP202/Custom-Character/pull/1) já está incorporado à `main`. Seus pesos e IDs foram preservados.
 
 ### Técnicas
 
@@ -68,6 +69,16 @@ Partidas v3 concluídas retomam nas novas etapas elegíveis, mantendo o formato 
 Foram consultados os perfis e as sinopses oficiais do anime. As sinopses confirmam o contexto das cenas, mas não detalham todas as condições de ativação: os episódios indicados são as referências de leitura. Cópia fica fora até representar aquisição/armazenamento sem conceder Rika; Dagon, até separar suas invocações demonstradas em domínio (episódio 39) de uma aplicação inicial sem domínio. Modulo continua sem catálogo de habilidades por falta de fundamentação suficiente. Jogo/Hanami usam rótulos descritivos, sem afirmar nomes oficiais não confirmados.
 
 Referências de leitura das técnicas: episódios 1 (Cães Divinos), 7 (Gojo/Jogo), 10 (Nanami/Mahito), 16 (Mechamaru), 17 (Construção), 18 (Sangue), 19 (Fala/Hanami), 20 (Boogie Woogie), 24 (Boneco de Palha), 38 (Projeção) e JJK 0, capítulo 4/filme (Geto). Os links correspondentes ficam nos resultados. Não há reprodução de imagens ou textos desses materiais.
+
+### Controle, output e proficiência
+
+`src/data/mastery.ts` mantém os três catálogos e exemplos oficiais: controle e output usam 15/25/30/20/10; proficiência, 20/25/25/20/10. Reserva, controle e output não aumentam uns aos outros. O resumo deriva das combinações, sem pontos ou cálculos de dano. `practicedUse` em cada técnica descreve sua exploração além do uso inicial, mantendo os requisitos e os recursos ausentes.
+
+Na restrição completa, as três etapas são ignoradas e a ficha registra ausência de energia própria. Na parcial, o controle é precisão potencial, o output Muito baixo é automático e a proficiência efetiva fica entre Iniciante e Básica. Na restrição corporal, output é filtrado para Alto/Extraordinário (pesos relativos 20/10), preservando alcance favorecido e corpo debilitado. Pisos e tetos são adaptações explícitas do jogo. Sem técnica inata, somente proficiência é ignorada. Nenhuma dessas regras concede Marionetes, Seis Olhos ou um repertório completo.
+
+Espíritos usam explicações de controle/output próprias de sua natureza. Cadáveres e simurianos mantêm suas reservas e recebem avisos de catálogo ainda insuficiente para as três capacidades, sem presumir fisiologia humana ou incapacidade canônica; a ficha simuriana usa rolloluca. Fichas v3 concluídas de humanos/espíritos retomam em Controle sem novos resultados atribuídos silenciosamente. A chave e o formato do save continuam os mesmos.
+
+Referências: [Yuji e Todo, episódio 16](https://jujutsukaisen.jp/episodes/16.php); [output de Ryu, perfil oficial](https://jujutsukaisen.jp/character/) e [Sendai, episódio 59](https://jujutsukaisen.jp/episodes/59.php); [alcance/output de Kokichi, perfil oficial](https://jujutsukaisen.jp/character/category2.php). São exemplos de conceitos, sem equivalência entre personagens e níveis da escala. Os feitos e limites de cada técnica continuam associados às fontes anteriores.
 
 `src/lib/wheel.ts` concentra a geometria e o sorteio. `src/lib/game.ts` controla estados e persistência. Os componentes `Wheel`, `ResultReveal` e `CharacterSheet` apresentam o jogo; `App` conecta as interações.
 

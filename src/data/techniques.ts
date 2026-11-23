@@ -18,6 +18,7 @@ interface TechniqueEntry {
   version: string;
   description: string;
   initialUse: string;
+  practicedUse: string;
   limitations: string;
   feats: ReferenceFeat[];
   sources?: ReferenceSource[];
@@ -32,6 +33,8 @@ interface TechniqueEntry {
 const entries: TechniqueEntry[] = [
   {
     id: 'boogie-woogie',
+    practicedUse:
+      'Coordena melhor trocas entre alvos válidos e suas condições de ativação. Não recebe a experiência tática de Todo nem a versão modificada de Shinjuku.',
     name: 'Boogie Woogie',
     shortLabel: 'BOOGIE',
     character: 'Aoi Todo',
@@ -55,6 +58,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'ratio',
+    practicedUse:
+      'Busca o ponto de sete para três com maior consistência nas aplicações acessíveis. O golpe ainda precisa acertar; não recebe Hora Extra ou uma ferramenta.',
     name: 'Técnica da Proporção',
     shortLabel: 'PROPORÇÃO',
     character: 'Kento Nanami',
@@ -78,6 +83,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'straw-doll',
+    practicedUse:
+      'Combina melhor aplicações por pregos e vínculos válidos quando dispõe do material necessário. Instrumentos e ligação com o alvo continuam exigidos.',
     name: 'Técnica do Boneco de Palha',
     shortLabel: 'BONECO',
     character: 'Nobara Kugisaki',
@@ -101,6 +108,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'puppet-manipulation',
+    practicedUse:
+      'Opera com maior precisão as marionetes compatíveis que possuir. Não recebe robôs, armamento ou o alcance da Restrição Celestial de Kokichi.',
     name: 'Manipulação de Marionetes',
     shortLabel: 'MARIONETES',
     character: 'Kokichi Muta',
@@ -124,6 +133,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'construction',
+    practicedUse:
+      'Aprimora a execução de construções viáveis conforme seu conhecimento e energia. O custo continua elevado; não recebe Esfera Perfeita ou ferramentas especiais.',
     name: 'Construção',
     shortLabel: 'CONSTRUÇÃO',
     character: 'Mai Zen’in',
@@ -147,6 +158,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'cursed-spirit-manipulation',
+    practicedUse:
+      'Coordena melhor espíritos já capturados. Continua sem um exército inicial, e cada nova captura precisa cumprir as condições da técnica.',
     name: 'Manipulação de Espíritos Amaldiçoados',
     shortLabel: 'ESPÍRITOS',
     character: 'Suguru Geto',
@@ -174,6 +187,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'ten-shadows',
+    practicedUse:
+      'Coordena melhor os shikigamis já disponíveis. Outros exigem subjugação: não recebe todos os shikigamis domesticados nem Mahoraga automaticamente.',
     name: 'Técnica das Dez Sombras',
     shortLabel: 'DEZ SOMBRAS',
     character: 'Megumi Fushiguro',
@@ -203,6 +218,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'projection',
+    practicedUse:
+      'Planeja e executa sequências de quadros com maior consistência. Contato, regras de movimento e limitações do próprio corpo continuam valendo.',
     name: 'Projeção Feiticeira',
     shortLabel: 'PROJEÇÃO',
     character: 'Naobito Zen’in',
@@ -227,6 +244,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'blood-manipulation',
+    practicedUse:
+      'Refina aplicações viáveis com o próprio sangue. Perda de sangue e gasto de energia continuam limitando o uso; não recebe a fisiologia de Choso.',
     name: 'Manipulação de Sangue',
     shortLabel: 'SANGUE',
     character: 'Noritoshi Kamo',
@@ -251,6 +270,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'cursed-speech',
+    practicedUse:
+      'Escolhe e aplica melhor os comandos compatíveis. A força do alvo e o retorno sobre a garganta continuam importando; não há obediência garantida.',
     name: 'Fala Amaldiçoada',
     shortLabel: 'FALA',
     character: 'Toge Inumaki',
@@ -280,6 +301,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'limitless',
+    practicedUse:
+      'Refina o conhecimento e as tentativas compatíveis com seus recursos. Não concede Seis Olhos nem garante utilização plena, estável ou contínua do Ilimitado.',
     name: 'Ilimitado',
     shortLabel: 'ILIMITADO',
     character: 'Satoru Gojo',
@@ -310,6 +333,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'idle-transfiguration',
+    practicedUse:
+      'Refina alterações de forma acessíveis. Afetar outra alma continua exigindo contato e enfrenta resistência e riscos; não recebe um domínio ou vitória garantida.',
     name: 'Transfiguração Ociosa',
     shortLabel: 'TRANSFIGURAÇÃO',
     character: 'Mahito',
@@ -333,6 +358,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'jogo-flames',
+    practicedUse:
+      'Regula melhor as manifestações de chamas que sua energia e controle permitem. Não recebe os meteoros, o domínio ou a escala destrutiva de Jogo.',
     name: 'Chamas — Jogo',
     shortLabel: 'CHAMAS',
     character: 'Jogo',
@@ -356,6 +383,8 @@ const entries: TechniqueEntry[] = [
   },
   {
     id: 'hanami-plants',
+    practicedUse:
+      'Coordena melhor estruturas vegetais já viáveis. Não recebe automaticamente brotos especializados, efeitos adicionais ou todo o repertório de Hanami.',
     name: 'Manipulação vegetal — Hanami',
     shortLabel: 'VEGETAÇÃO',
     character: 'Hanami',
@@ -380,9 +409,19 @@ const entries: TechniqueEntry[] = [
 ];
 
 export const techniques: WheelOption[] = entries.map(
-  ({ character, version, initialUse, limitations, feats, nature, lineage, ...option }) => ({
+  ({
+    character,
+    version,
+    initialUse,
+    practicedUse,
+    limitations,
+    feats,
+    nature,
+    lineage,
+    ...option
+  }) => ({
     ...option,
-    technique: { nature, lineage, requiresOwnEnergy: true },
+    technique: { nature, lineage, requiresOwnEnergy: true, practicedUse },
     reference: { character, version, initialUse, limitations, feats },
   }),
 );

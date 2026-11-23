@@ -10,6 +10,7 @@ export interface ReferenceFeat {
 }
 
 export interface CharacterReference {
+  topic?: 'energy' | 'proficiency';
   character?: string;
   initialUse?: string;
   version: string;

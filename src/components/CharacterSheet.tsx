@@ -1,5 +1,11 @@
 import { chapters, wheels } from '../data/wheels.ts';
-import { forcedOutcome, isStageAvailable, resultDetails, wheelForStep } from '../lib/conditions.ts';
+import {
+  energySummary,
+  forcedOutcome,
+  isStageAvailable,
+  resultDetails,
+  wheelForStep,
+} from '../lib/conditions.ts';
 import type { GameState } from '../lib/game.ts';
 
 export default function CharacterSheet({
@@ -15,6 +21,7 @@ export default function CharacterSheet({
       : state.results;
   const count = Object.keys(visibleResults).length;
   const visibleState = { ...state, results: visibleResults };
+  const summary = energySummary(visibleState);
   const automaticCount = wheels.filter(
     (wheel) => visibleResults[wheel.id] && forcedOutcome(wheel, visibleState),
   ).length;
@@ -93,6 +100,15 @@ export default function CharacterSheet({
                 );
               })}
           </dl>
+          {chapter.id === 'mastery' && summary.length > 0 && (
+            <div className="sheet-context" aria-label="Resumo das capacidades">
+              <h4>No conjunto</h4>
+              {summary.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              <small>Interpretação qualitativa do jogo.</small>
+            </div>
+          )}
         </section>
       ))}
       <div className="sheet-footer">

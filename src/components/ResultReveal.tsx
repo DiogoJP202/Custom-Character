@@ -15,7 +15,9 @@ function ResultContent({
   automaticReason?: string;
 }) {
   const reference = result.reference;
-  const isTechnique = !!result.technique;
+  const isProficiency = reference?.topic === 'proficiency';
+  const isTechnique = !!result.technique || isProficiency;
+  const isEnergy = reference?.topic === 'energy';
   const representativeFeat = reference?.feats[0];
   return (
     <>
@@ -37,9 +39,15 @@ function ResultContent({
           </h2>
           {reference && (
             <p className="reference-version">
-              {result.adjustment && 'Referência sorteada · '}
-              {reference.character && `${reference.character} · `}
-              {reference.version}
+              {isEnergy ? (
+                'Escala qualitativa do jogo'
+              ) : (
+                <>
+                  {result.adjustment && 'Referência sorteada · '}
+                  {reference.character && `${reference.character} · `}
+                  {reference.version}
+                </>
+              )}
             </p>
           )}
         </div>
@@ -56,19 +64,23 @@ function ResultContent({
           <p>{result.description}</p>
           {reference && (
             <p className="comparison-note">
-              {isTechnique
-                ? 'Receber a técnica não concede o domínio demonstrado pelo personagem.'
-                : 'Interpretação para o jogo, não uma equivalência exata.'}
+              {isProficiency
+                ? 'Proficiência não elimina requisitos, custos ou recursos ausentes.'
+                : isTechnique
+                  ? 'Receber a técnica não concede o domínio demonstrado pelo personagem.'
+                  : isEnergy
+                    ? 'O exemplo ilustra o conceito; não equivale ao nível sorteado.'
+                    : 'Interpretação para o jogo, não uma equivalência exata.'}
             </p>
           )}
         </section>
         {reference?.initialUse && (
           <section className="representative-feat">
-            <h3>Uso inicial</h3>
+            <h3>{isProficiency ? 'Aplicações possíveis' : 'Uso inicial'}</h3>
             <p>{reference.initialUse}</p>
           </section>
         )}
-        {representativeFeat && !result.adjustment && !isTechnique && (
+        {representativeFeat && !result.adjustment && !isTechnique && !isEnergy && (
           <section className="representative-feat" aria-label="Feito representativo">
             <h3>Na obra</h3>
             <p>{representativeFeat.description}</p>
@@ -98,6 +110,11 @@ function ResultContent({
                 <>
                   <section className="reference-feats" aria-label="Feitos e contexto">
                     <h3>Feitos e contexto</h3>
+                    {isEnergy && (
+                      <p className="reference-version">
+                        {reference.character} · {reference.version}
+                      </p>
+                    )}
                     <ul>
                       {reference.feats.map((feat) => (
                         <li key={`${feat.source.url}-${feat.description}`}>
@@ -117,11 +134,15 @@ function ResultContent({
                     </ul>
                   </section>
                   <section className="comparison-limits">
-                    <h3>Limites da comparação</h3>
+                    <h3>{isProficiency ? 'Condições da técnica' : 'Limites da comparação'}</h3>
                     <p>{reference.limitations}</p>
                   </section>
                   <p className="reference-disclaimer">
-                    {isTechnique ? (
+                    {isEnergy ? (
+                      'Controle, output e reserva são capacidades distintas. Esta escala e suas combinações são abstrações do jogo; os exemplos não transferem técnicas, características especiais ou a experiência dos personagens. As fontes indicam o contexto oficial, sem classificar os níveis desta escala.'
+                    ) : isProficiency ? (
+                      'A proficiência descreve aplicações acessíveis, não todo o repertório do personagem de referência. Energia, condições de ativação, fisiologia e recursos necessários continuam limitando o uso. Não concede domínios ou aplicações reversas.'
+                    ) : isTechnique ? (
                       'O sorteio atribui a técnica, não o domínio de suas aplicações. Não concede equipamentos, treinamento, expansões de domínio ou aplicações reversas. Os links indicam referências oficiais de leitura; suas sinopses não descrevem todas as condições de uso.'
                     ) : (
                       <>

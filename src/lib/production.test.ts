@@ -47,7 +47,7 @@ test('the actual production reducer rejects retries even with a forged testMode 
     JSON.stringify({
       version: 3,
       phase: 'complete',
-      stepId: 'innate-technique',
+      stepId: 'technique-proficiency',
       results: {
         nature: 'human',
         lineage: 'gojo',
@@ -58,10 +58,19 @@ test('the actual production reducer rejects retries even with a forged testMode 
         'energy-reserve': 'immense',
         'technique-presence': 'yes',
         'innate-technique': 'limitless',
+        'energy-control': 'exceptional',
+        'energy-output': 'high',
+        'technique-proficiency': 'exceptional',
       },
     }),
   );
   assert.equal(human.phase, 'complete');
-  for (const stepId of ['technique-presence', 'innate-technique'])
+  for (const stepId of [
+    'technique-presence',
+    'innate-technique',
+    'energy-control',
+    'energy-output',
+    'technique-proficiency',
+  ])
     assert.strictEqual(gameReducer(human, { type: 'retry', stepId, testMode: true }), human);
 });

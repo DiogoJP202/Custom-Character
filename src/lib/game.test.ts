@@ -34,6 +34,20 @@ function finishPhysical(state: GameState): GameState {
   }
   if (state.stepId === 'technique-presence')
     state = gameReducer(roll(state, 'no'), { type: 'continue' });
+  for (const id of ['energy-control', 'energy-output']) {
+    if (state.phase === 'complete') break;
+    assert.equal(state.stepId, id);
+    state = gameReducer(
+      roll(
+        state,
+        playableWheel(
+          wheels.find((wheel) => wheel.id === id)!,
+          state,
+        ).options[0].id,
+      ),
+      { type: 'continue' },
+    );
+  }
   return state;
 }
 
@@ -48,7 +62,7 @@ test('every human lineage passes birth conditions, physical attributes and energ
     });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(Object.keys(complete.results).length, 8);
+    assert.equal(Object.keys(complete.results).length, 10);
     assert.equal(complete.results.lineage, lineage.id);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
     assert.deepEqual(gameReducer(complete, { type: 'reset' }), { ...initialState, phase: 'ready' });
@@ -61,11 +75,8 @@ test('all nonhuman natures skip lineage and birth and finish physical attributes
     assert.deepEqual(chapterTwo.results, { nature });
     const complete = finishPhysical(chapterTwo);
     assert.equal(complete.phase, 'complete');
-    assert.equal(
-      complete.stepId,
-      nature === 'cursed-spirit' ? 'technique-presence' : 'energy-reserve',
-    );
-    assert.equal(Object.keys(complete.results).length, nature === 'cursed-spirit' ? 6 : 5);
+    assert.equal(complete.stepId, nature === 'cursed-spirit' ? 'energy-output' : 'energy-reserve');
+    assert.equal(Object.keys(complete.results).length, nature === 'cursed-spirit' ? 8 : 5);
     assert.equal(complete.results.lineage, undefined);
     assert.deepEqual(parseSavedGame(JSON.stringify(complete)), complete);
   }

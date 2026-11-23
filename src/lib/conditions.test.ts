@@ -103,6 +103,10 @@ test('all human birth conditions affect final physical capacities without erasin
       state = commit(state, condition === 'physical-partial' ? 'very-low' : 'immense');
       assert.equal(state.stepId, 'technique-presence');
       state = commit(state, 'no');
+      assert.equal(state.stepId, 'energy-control');
+      state = commit(state, 'good');
+      assert.equal(state.stepId, 'energy-output');
+      state = commit(state, condition === 'physical-partial' ? 'very-low' : 'high');
       assert.equal(state.phase, 'complete');
       if (condition === 'body-limited') {
         assert.match(resultDetails('energy-reserve', state)!.description, /não altera o estoque/);

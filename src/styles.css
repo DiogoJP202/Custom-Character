@@ -592,6 +592,22 @@ h1 {
   color: #91313a;
   margin-top: 5px;
 }
+.sheet-context {
+  margin-top: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.sheet-context h4 {
+  margin: 0 0 6px;
+  font-size: inherit;
+}
+.sheet-context p {
+  margin: 0 0 10px;
+}
+.sheet-context small {
+  color: #58616a;
+  font-size: 12px;
+}
 .practical-description > .result-adjustment {
   color: #e29da3;
   font-weight: 600;

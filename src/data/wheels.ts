@@ -2,6 +2,7 @@ import { physicalReferences, type CharacterReference } from './references.ts';
 import type { ReferenceSource } from './references.ts';
 import { birthOptions, energyOptions, energyNotes } from './special.ts';
 import { techniques, humanTechniquePresence } from './techniques.ts';
+import { controlOptions, outputOptions, proficiencyOptions, masteryNotes } from './mastery.ts';
 
 export const chapters = [
   { id: 'origin', name: 'Origem', hubLabel: 'ORIGEM' },
@@ -9,6 +10,7 @@ export const chapters = [
   { id: 'physical', name: 'Atributos físicos', hubLabel: 'FÍSICO' },
   { id: 'energy', name: 'Energia', hubLabel: 'ENERGIA' },
   { id: 'techniques', name: 'Técnicas amaldiçoadas', hubLabel: 'TÉCNICA' },
+  { id: 'mastery', name: 'Controle, output e proficiência', hubLabel: 'USO' },
 ] as const;
 
 export interface WheelOption {
@@ -21,7 +23,12 @@ export interface WheelOption {
   reference?: CharacterReference;
   notes?: string;
   sources?: ReferenceSource[];
-  technique?: { nature: 'human' | 'cursed-spirit'; lineage?: string; requiresOwnEnergy: boolean };
+  technique?: {
+    nature: 'human' | 'cursed-spirit';
+    lineage?: string;
+    requiresOwnEnergy: boolean;
+    practicedUse: string;
+  };
   adjustment?: {
     capacity: 'enhanced' | 'extraordinary' | 'severely-limited';
     label: string;
@@ -356,6 +363,29 @@ export const wheels: WheelDefinition[] = [
     availableWhen: { stepId: 'technique-presence', optionId: 'yes' },
     unavailableLabel: 'Sem técnica sorteada',
     options: techniques,
+  },
+  {
+    id: 'energy-control',
+    chapterId: 'mastery',
+    name: 'Controle de energia amaldiçoada',
+    description: 'Sorteie a precisão com que o personagem regula seu fluxo de energia.',
+    options: controlOptions.map((option) => ({ ...option, notes: masteryNotes })),
+  },
+  {
+    id: 'energy-output',
+    chapterId: 'mastery',
+    name: 'Output de energia',
+    description: 'Sorteie quanta energia pode liberar de uma vez, sem aumentar sua reserva.',
+    options: outputOptions.map((option) => ({ ...option, notes: masteryNotes })),
+  },
+  {
+    id: 'technique-proficiency',
+    chapterId: 'mastery',
+    name: 'Proficiência na técnica inata',
+    description: 'Sorteie o domínio das aplicações compatíveis da técnica recebida.',
+    availableWhen: { stepId: 'technique-presence', optionId: 'yes' },
+    unavailableLabel: 'Não se aplica — sem técnica inata',
+    options: proficiencyOptions.map((option) => ({ ...option, notes: masteryNotes })),
   },
 ];
 
