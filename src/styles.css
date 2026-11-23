@@ -1395,6 +1395,12 @@ h1 {
   line-height: 1.6;
   display: block;
 }
+.profile-derived-title {
+  font-family: var(--display);
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 12px 0 0;
+}
 .profile-facts {
   margin: 0;
   padding-left: 24px;
@@ -1617,5 +1623,222 @@ h1 {
   }
   .profile-reset-dialog {
     padding: 22px;
+  }
+}
+
+.gallery-nav,
+.gallery-back {
+  min-height: 44px;
+  padding: 9px 12px;
+  color: var(--paper);
+  background: transparent;
+  border: 1px solid var(--line);
+  font-size: 13px;
+}
+.gallery-nav {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.gallery-nav[aria-pressed='true'] {
+  border-color: var(--red);
+}
+.gallery-nav:hover:not(:disabled),
+.gallery-back:hover {
+  border-color: var(--paper);
+}
+.gallery-page {
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: 32px 0 50px;
+  min-width: 0;
+}
+.gallery-heading h1 {
+  overflow-wrap: anywhere;
+}
+.gallery-heading > p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.gallery-back {
+  margin-bottom: 20px;
+  padding-left: 0;
+  border: 0;
+  color: #bacbd5;
+}
+.gallery-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 26px;
+}
+.gallery-toolbar .button {
+  min-height: 44px;
+  padding: 10px 18px;
+}
+.gallery-toolbar .gallery-delete {
+  color: #f0a5ab;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 285px), 1fr));
+  gap: 22px;
+}
+.gallery-card {
+  position: relative;
+  min-width: 0;
+  padding: 22px;
+  background: #1b1f24;
+  border-top: 3px solid var(--steel);
+}
+.gallery-card:focus-within,
+.gallery-card:hover {
+  border-top-color: var(--red);
+}
+.gallery-card h2 {
+  margin: 10px 0;
+  font: 700 32px / 1.1 var(--display);
+  overflow-wrap: anywhere;
+}
+.gallery-card h2 button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.gallery-card h2 button::after {
+  position: absolute;
+  content: '';
+  inset: 0;
+}
+.gallery-card h2 button:focus-visible::after {
+  outline: 2px solid var(--paper);
+  outline-offset: 4px;
+}
+.gallery-card-date {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.gallery-card-identity {
+  color: #c0cdd5;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 10px 0 20px;
+}
+.gallery-card dl {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.gallery-card dl > div + div {
+  margin-top: 9px;
+}
+.gallery-card dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+.gallery-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.gallery-open-label {
+  display: block;
+  margin-top: 22px;
+  color: #b7c6ce;
+  font-size: 12px;
+}
+.gallery-empty {
+  border-top: 1px solid var(--line);
+  padding: 32px 0;
+}
+.gallery-empty h2 {
+  margin: 0 0 12px;
+  font: 700 30px / 1.1 var(--display);
+}
+.gallery-empty p {
+  color: var(--muted);
+  max-width: 600px;
+  line-height: 1.8;
+}
+.gallery-error {
+  padding: 18px;
+  background: #392429;
+  border-left: 3px solid var(--red);
+  margin: 20px 0;
+}
+.gallery-error p,
+.gallery-notice {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.gallery-notice {
+  color: #ccd8cf;
+  margin-bottom: 24px;
+}
+.gallery-dialog form {
+  margin-top: 16px;
+}
+.gallery-dialog label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.gallery-dialog input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px;
+  font: inherit;
+  color: var(--paper);
+  background: var(--ink);
+  border: 1px solid var(--steel);
+}
+.gallery-dialog input:focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 3px;
+}
+.gallery-dialog input[aria-invalid='true'] {
+  border-color: #f0a5ab;
+}
+.gallery-dialog small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+.gallery-dialog .gallery-form-error {
+  color: #ffc4ca;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 14px 0;
+}
+.gallery-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+@media (max-width: 720px) {
+  .site-header {
+    flex-wrap: wrap;
+    padding-block: 14px;
+  }
+  .site-header .header-context {
+    margin-left: auto;
+  }
+  .gallery-nav {
+    order: 3;
+    margin-left: 0;
+  }
+  .site-header .test-mode-toggle {
+    order: 4;
+    margin-left: auto;
+  }
+  .gallery-dialog-actions .button {
+    flex: 1 1 160px;
   }
 }

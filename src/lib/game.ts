@@ -109,6 +109,17 @@ export function gameReducer(state: GameState, action: Action): GameState {
 // Validate one contiguous path through the catalog, including conditional stages.
 // Terminal saves resume at the first new wheel without changing any result.
 export function parseSavedGame(raw: string | null): GameState {
+  return parseGame(raw);
+}
+
+// Archives validate against their historical catalog boundary and never resume play.
+export function parseArchivedGame(raw: string, catalogEnd: string): GameState | undefined {
+  if (!catalogEnd) return undefined;
+  const parsed = parseGame(raw, catalogEnd);
+  return parsed.phase === 'complete' ? parsed : undefined;
+}
+
+function parseGame(raw: string | null, catalogEnd?: string): GameState {
   try {
     if (!raw) return initialState;
     const saved: unknown = JSON.parse(raw);
@@ -116,6 +127,8 @@ export function parseSavedGame(raw: string | null): GameState {
     const { phase, stepId, results, version, legacyBirth } = saved as Record<string, unknown>;
     const legacy = version === undefined;
     const oldFlow = version !== 3;
+    const boundary = catalogEnd ? wheels.findIndex((wheel) => wheel.id === catalogEnd) : -1;
+    if (catalogEnd && (boundary < 0 || version !== 3 || phase !== 'complete')) return initialState;
     if (
       (!legacy && version !== 2 && version !== 3) ||
       (legacyBirth !== undefined && (legacyBirth !== true || oldFlow)) ||
@@ -154,8 +167,13 @@ export function parseSavedGame(raw: string | null): GameState {
     };
     const catalog = oldFlow
       ? wheels.filter((wheel) => ['origin', 'physical'].includes(wheel.chapterId))
-      : wheels;
-    if (oldFlow && entries.some(([id]) => !catalog.some((wheel) => wheel.id === id)))
+      : catalogEnd
+        ? wheels.slice(0, boundary + 1)
+        : wheels;
+    if (
+      (oldFlow || catalogEnd) &&
+      entries.some(([id]) => !catalog.some((wheel) => wheel.id === id))
+    )
       return initialState;
     if (oldFlow && !catalog.includes(current)) return initialState;
 
@@ -194,9 +212,10 @@ export function parseSavedGame(raw: string | null): GameState {
       results: restoredResults,
       ...(legacyBirth || migratedBirth ? { legacyBirth: true as const } : {}),
     };
-    const firstNewUnrolled = wheels.find(
+    const firstNewUnrolled = (catalogEnd ? catalog : wheels).find(
       (wheel) => isStageAvailable(wheel, state) && !Object.hasOwn(restoredResults, wheel.id),
     );
+    if (catalogEnd && firstNewUnrolled) return initialState;
     if (phase === 'intro')
       return !entries.length && stepId === initialState.stepId ? { ...state, phase } : initialState;
     if (phase === 'ready')

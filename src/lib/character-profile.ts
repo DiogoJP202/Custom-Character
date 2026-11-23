@@ -20,7 +20,7 @@ interface ProfileCapability {
 const firstSentence = (text: string) => text.split(/(?<=\.)\s/)[0];
 
 /** Read-only interpretation of recorded results. No new stats, eligibility or random draws. */
-export function characterProfile(state: RuleContext) {
+export function characterProfile(state: RuleContext, scope?: readonly string[]) {
   const r = state.results;
   const option = (id: string) => resultDetails(id, state);
   const name = (id: string) => option(id)?.name ?? 'Não registrado';
@@ -321,7 +321,14 @@ export function characterProfile(state: RuleContext) {
           ]
         : []),
     ],
-    capabilities,
+    capabilities: capabilities
+      .map((capability) => ({
+        ...capability,
+        steps: capability.steps.filter(
+          (id) => (!scope || scope.includes(id)) && !!resultDetails(id, state),
+        ),
+      }))
+      .filter((capability) => capability.steps.length > 0),
     combatStyle: [
       `${physicalStyle} ${toolStyle}`,
       `${techniqueStyle} ${energeticStyle}`.trim(),

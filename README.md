@@ -113,6 +113,12 @@ Saves v3 concluídos retomam no primeiro estágio novo elegível, sem sorteios n
 
 Ao concluir os oito capítulos disponíveis, a criação vira um dossiê com identidade derivada, capacidades efetivas, estilo de combate, pontos fortes e limites. `src/lib/character-profile.ts` é uma interpretação pura dos resultados; reutiliza os resumos e critérios existentes de cura/domínio, sem novos sorteios, classes oficiais ou alterações de poderes. A ficha completa e suas fontes continuam consultáveis. Uma confirmação protege a substituição do único save. Chave, formato e resultados salvos permanecem iguais; nenhuma roleta foi adicionada nesta fase.
 
+### Galeria local
+
+“Meus personagens” guarda até 30 fichas concluídas em `jjk-character-gallery:v1`, separadas da criação ativa em `jjk-spinner:v1`. O registro contém UUID, nome normalizado (até 60 caracteres), data do salvamento e snapshot v3; descrições continuam derivadas. Resultados idênticos são reconhecidos como a mesma ficha para evitar duplicatas, inclusive após recarregar. Renomear e excluir não alteram os resultados ou a partida ativa. Fichas arquivadas não oferecem retry, mesmo em desenvolvimento.
+
+O registro v1 fixa seu limite histórico em `domain-expansion`; sua validação reutiliza o parser de jogo sem retomar etapas futuras. Um novo catálogo de arquivamento deverá versionar esse limite, preservando a leitura de v1. JSON ou registros inválidos não são sobrescritos: as fichas legíveis permanecem disponíveis e alterações ficam bloqueadas. Escritas falhas não são confirmadas. As mutações releem a coleção e a interface acompanha eventos `storage`, mas localStorage não oferece transações entre abas. Os dados pertencem somente a este navegador, sem sincronização em nuvem.
+
 ## Referências e limites de cânone
 
 Este é um projeto de fãs. **Comparações de desempenho, probabilidades e combinações são abstrações do jogo, não classificações oficiais.** Referências físicas não concedem técnicas, armas, regeneração ou a natureza do personagem citado. Megumi, Panda, Maki, Todo, Yuji e Hanami são considerados no arco do Intercâmbio; Toji, em Shibuya. “Sem clã conhecido” descreve a ausência de vínculo estabelecido pelo jogo, não uma classificação oficial.
