@@ -23,6 +23,7 @@ export default function App() {
   const [gallery, setGallery] = useState(() => loadGallery());
   const [view, setView] = useState<'creation' | 'gallery'>('creation');
   const [saveOpen, setSaveOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const focusAfterSave = useRef(false);
   const savedCharacter = findSavedCharacter(gallery.records, state);
   const [inspectedStep, setInspectedStep] = useState<string | null>(null);
@@ -123,6 +124,18 @@ export default function App() {
     dispatch(action);
   }
 
+  function cancelCreation() {
+    const action = { type: 'cancel' as const };
+    const next = gameReducer(state, action);
+    setCancelOpen(false);
+    if (next === state) return;
+    saveGame(next);
+    spinLock.current = false;
+    setInspectedStep(null);
+    setWheelRun((run) => run + 1);
+    dispatch(action);
+  }
+
   return (
     <div className="app-shell">
       <a className="skip-link" href="#game">
@@ -211,6 +224,15 @@ export default function App() {
                   Modo de teste ativo. Você pode repetir os giros e testar outros resultados.
                 </p>
               )}
+              {!isIntro && !terminal && (
+                <button
+                  className="creation-cancel"
+                  aria-haspopup="dialog"
+                  onClick={() => setCancelOpen(true)}
+                >
+                  Cancelar criação
+                </button>
+              )}
             </div>
             {terminal ? (
               <FinalCharacterSheet
@@ -279,7 +301,7 @@ export default function App() {
                     key={wheel.id}
                     attribute={wheel.name}
                     result={result}
-                    focusOnMount={!inspectedResult}
+                    focusOnMount={!inspectedResult && !cancelOpen}
                     reducedMotion={reducedMotion}
                     automaticReason={forced?.reason}
                     onContinue={() => dispatch({ type: 'continue' })}
@@ -336,6 +358,9 @@ export default function App() {
         </span>
         <p>Projeto de fãs, sem vínculo oficial. Universo de Gege Akutami.</p>
       </footer>
+      {view === 'creation' && cancelOpen && !isIntro && !terminal && (
+        <CancelCreationDialog onKeep={() => setCancelOpen(false)} onConfirm={cancelCreation} />
+      )}
       {view === 'creation' && saveOpen && terminal && (
         <GalleryNameDialog
           title="Salvar personagem"
@@ -366,5 +391,44 @@ export default function App() {
         />
       )}
     </div>
+  );
+}
+
+function CancelCreationDialog({ onKeep, onConfirm }: { onKeep: () => void; onConfirm: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const element = dialog.current!;
+    element.showModal();
+    return () => {
+      if (element.open) element.close();
+    };
+  }, []);
+  return (
+    <dialog
+      ref={dialog}
+      className="profile-reset-dialog"
+      aria-labelledby="cancel-creation-title"
+      aria-describedby="cancel-creation-description"
+      onClose={(event) => {
+        if (!event.currentTarget.open) onKeep();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) dialog.current?.close();
+      }}
+    >
+      <h2 id="cancel-creation-title">Cancelar criação?</h2>
+      <p id="cancel-creation-description">
+        Os resultados da criação atual serão descartados e você voltará à roleta de Natureza.
+        Os personagens salvos na galeria serão mantidos.
+      </p>
+      <div>
+        <button className="button button-secondary" onClick={onKeep} autoFocus>
+          Continuar criação
+        </button>
+        <button className="button button-primary" onClick={onConfirm}>
+          Cancelar e voltar ao início
+        </button>
+      </div>
+    </dialog>
   );
 }

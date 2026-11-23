@@ -45,6 +45,16 @@ test('the actual production reducer rejects retries even with a forged testMode 
     }
   }
   assert.equal(gameReducer(state, { type: 'reset' }).phase, 'ready');
+  const spinning = gameReducer(gameReducer(state, { type: 'reset' }), {
+    type: 'spin',
+    optionId: 'human',
+  });
+  assert.deepEqual(gameReducer(spinning, { type: 'cancel' }), {
+    version: 3,
+    phase: 'intro',
+    stepId: 'nature',
+    results: {},
+  });
   const human = parseSavedGame(
     JSON.stringify({
       version: 3,

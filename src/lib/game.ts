@@ -15,6 +15,7 @@ export type Action =
   | { type: 'reveal' }
   | { type: 'continue' }
   | { type: 'retry'; stepId: string; testMode: boolean }
+  | { type: 'cancel' }
   | { type: 'reset' };
 
 // Keep the key to recover existing saves; version distinguishes the expanded flow.
@@ -101,6 +102,8 @@ export function gameReducer(state: GameState, action: Action): GameState {
         ),
       });
     }
+    case 'cancel':
+      return state.phase !== 'intro' && state.phase !== 'complete' ? initialState : state;
     case 'reset':
       return state.phase === 'complete' ? enterStage({ ...initialState, phase: 'ready' }) : state;
   }

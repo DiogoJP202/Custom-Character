@@ -187,6 +187,20 @@ test('a new creation resets only the active slot; consulting and profiling archi
   assert.deepEqual(JSON.parse(storage.getItem(STORAGE_KEY)!), active);
 });
 
+test('cancelling an active creation preserves the gallery and archived snapshots', () => {
+  const storage = new MemoryStorage();
+  const record = successful(saveCharacter(completed(), 'Guardado', storage)).record!;
+  const before = storage.getItem(GALLERY_STORAGE_KEY);
+  const spinning = gameReducer(gameReducer(initialState, { type: 'start' }), {
+    type: 'spin',
+    optionId: 'simurian',
+  });
+  storage.setItem(STORAGE_KEY, JSON.stringify(gameReducer(spinning, { type: 'cancel' })));
+  assert.deepEqual(parseSavedGame(storage.getItem(STORAGE_KEY)), initialState);
+  assert.equal(storage.getItem(GALLERY_STORAGE_KEY), before);
+  assert.deepEqual(loadGallery(storage).records, [record]);
+});
+
 test('future appended stages resume active games but never force historical archives into new draws', () => {
   const storage = new MemoryStorage();
   const original = completed();

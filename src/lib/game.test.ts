@@ -137,6 +137,55 @@ test('each stage requires a spin, a reveal and an explicit continuation; duplica
   }
 });
 
+test('cancelling any active stage returns to Natureza without results or accepting a late reveal', () => {
+  for (const nature of wheels[0].options) {
+    let state = gameReducer(initialState, { type: 'start' });
+    for (let i = 0; state.phase !== 'complete'; i++) {
+      assert.ok(i < wheels.length);
+      const phases = [state];
+      if (state.phase === 'ready') {
+        const wheel = playableWheel(wheels.find((entry) => entry.id === state.stepId)!, state);
+        const spinning = gameReducer(state, {
+          type: 'spin',
+          optionId: wheel.id === 'nature' ? nature.id : wheel.options[0].id,
+        });
+        state = gameReducer(spinning, { type: 'reveal' });
+        phases.push(spinning, state);
+      }
+      for (const active of phases) {
+        const before = JSON.stringify(active);
+        const cancelled = gameReducer(active, { type: 'cancel' });
+        assert.deepEqual(cancelled, initialState);
+        assert.equal(JSON.stringify(active), before);
+        assert.strictEqual(gameReducer(cancelled, { type: 'reveal' }), cancelled);
+        assert.strictEqual(gameReducer(cancelled, { type: 'continue' }), cancelled);
+        assert.deepEqual(parseSavedGame(JSON.stringify(cancelled)), initialState);
+        assert.equal(gameReducer(cancelled, { type: 'start' }).phase, 'ready');
+      }
+      state = gameReducer(state, { type: 'continue' });
+    }
+    assert.strictEqual(gameReducer(state, { type: 'cancel' }), state);
+  }
+  assert.strictEqual(gameReducer(initialState, { type: 'cancel' }), initialState);
+});
+
+test('cancelling removes legacy flags without a random draw', () => {
+  const state: GameState = {
+    version: 3,
+    phase: 'ready',
+    stepId: 'strength',
+    results: { nature: 'human', lineage: 'gojo' },
+    legacyBirth: true,
+  };
+  const random = Math.random;
+  Math.random = () => assert.fail('Cancelling must not roll a result');
+  try {
+    assert.deepEqual(gameReducer(state, { type: 'cancel' }), initialState);
+  } finally {
+    Math.random = random;
+  }
+});
+
 test('all phases of human and nonhuman games restore; interrupted spins reveal the committed result', () => {
   for (const nature of wheels[0].options) {
     let state = gameReducer(initialState, { type: 'start' });
@@ -276,6 +325,9 @@ test('storage round-trips versioned games and blocked storage does not interrupt
     saveGame(state);
     assert.equal(JSON.parse(values.get(STORAGE_KEY)!).version, 3);
     assert.deepEqual(loadGame(), state);
+    const cancelled = gameReducer(state, { type: 'cancel' });
+    saveGame(cancelled);
+    assert.deepEqual(loadGame(), initialState);
     Object.defineProperty(globalThis, 'localStorage', {
       configurable: true,
       get: () => {

@@ -206,6 +206,21 @@ h1 {
   font-size: 16px;
   line-height: 1.6;
 }
+.creation-cancel {
+  display: block;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 10px 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.creation-cancel:hover {
+  color: var(--paper);
+}
 .wheel-stage {
   width: min(100%, 442px);
   aspect-ratio: 1;
