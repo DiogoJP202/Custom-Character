@@ -1,5 +1,5 @@
 import { getOption, isWheelAvailable, wheels } from '../data/wheels.ts';
-import { isStageAvailable, playableWheel } from './conditions.ts';
+import { forcedOutcome, isStageAvailable, playableWheel } from './conditions.ts';
 
 export type Phase = 'intro' | 'ready' | 'spinning' | 'revealed' | 'complete';
 export interface GameState {
@@ -31,10 +31,25 @@ export function nextWheel(state: GameState) {
   return wheels.slice(currentIndex + 1).find((wheel) => isStageAvailable(wheel, state));
 }
 
+// One compatible outcome is a consequence, not a random draw. Stop at its reveal
+// so the player can read it and explicitly continue, including after restoring a save.
+function enterStage(state: GameState): GameState {
+  if (state.phase !== 'ready' || state.results[state.stepId]) return state;
+  const wheel = wheels.find((entry) => entry.id === state.stepId);
+  const forced = wheel && forcedOutcome(wheel, state);
+  return forced
+    ? {
+        ...state,
+        phase: 'revealed',
+        results: { ...state.results, [state.stepId]: forced.option.id },
+      }
+    : state;
+}
+
 export function gameReducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case 'start':
-      return state.phase === 'intro' ? { ...state, phase: 'ready' } : state;
+      return state.phase === 'intro' ? enterStage({ ...state, phase: 'ready' }) : state;
     case 'spin': {
       const wheel = wheels.find((entry) => entry.id === state.stepId);
       if (
@@ -42,6 +57,7 @@ export function gameReducer(state: GameState, action: Action): GameState {
         state.results[state.stepId] ||
         !wheel ||
         !isStageAvailable(wheel, state) ||
+        playableWheel(wheel, state).options.length <= 1 ||
         !playableWheel(wheel, state).options.some((option) => option.id === action.optionId)
       )
         return state;
@@ -56,7 +72,9 @@ export function gameReducer(state: GameState, action: Action): GameState {
     case 'continue': {
       if (state.phase !== 'revealed') return state;
       const next = nextWheel(state);
-      return next ? { ...state, stepId: next.id, phase: 'ready' } : { ...state, phase: 'complete' };
+      return next
+        ? enterStage({ ...state, stepId: next.id, phase: 'ready' })
+        : { ...state, phase: 'complete' };
     }
     case 'retry': {
       if (
@@ -68,9 +86,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
         return state;
       const index = wheels.findIndex((wheel) => wheel.id === action.stepId);
       if (index < 0) return state;
+      if (forcedOutcome(wheels[index], state)) return state;
       const earlierSteps = new Set(wheels.slice(0, index).map((wheel) => wheel.id));
       const { legacyBirth, ...rest } = state;
-      return {
+      return enterStage({
         ...rest,
         ...(legacyBirth && index > wheels.findIndex((wheel) => wheel.id === 'birth-condition')
           ? { legacyBirth }
@@ -80,10 +99,10 @@ export function gameReducer(state: GameState, action: Action): GameState {
         results: Object.fromEntries(
           Object.entries(state.results).filter(([id]) => earlierSteps.has(id)),
         ),
-      };
+      });
     }
     case 'reset':
-      return state.phase === 'complete' ? { ...initialState, phase: 'ready' } : state;
+      return state.phase === 'complete' ? enterStage({ ...initialState, phase: 'ready' }) : state;
   }
 }
 
@@ -182,13 +201,13 @@ export function parseSavedGame(raw: string | null): GameState {
       return !entries.length && stepId === initialState.stepId ? { ...state, phase } : initialState;
     if (phase === 'ready')
       return stepId === firstUnrolled?.id
-        ? { ...state, phase, stepId: firstNewUnrolled?.id ?? stepId }
+        ? enterStage({ ...state, phase, stepId: firstNewUnrolled?.id ?? stepId })
         : initialState;
     if (stepId !== lastRolled?.id) return initialState;
     if (phase === 'spinning' || phase === 'revealed') return { ...state, phase: 'revealed' };
     if (phase === 'complete' || (legacy && phase === 'pending')) {
       return firstNewUnrolled
-        ? { ...state, phase: 'ready', stepId: firstNewUnrolled.id }
+        ? enterStage({ ...state, phase: 'ready', stepId: firstNewUnrolled.id })
         : { ...state, phase: 'complete' };
     }
     return initialState;

@@ -6,11 +6,13 @@ function ResultContent({
   result,
   headingId,
   headingRef,
+  automaticReason,
 }: {
   attribute: string;
   result: WheelOption;
   headingId: string;
   headingRef?: Ref<HTMLHeadingElement>;
+  automaticReason?: string;
 }) {
   const reference = result.reference;
   const isTechnique = !!result.technique;
@@ -27,7 +29,8 @@ function ResultContent({
         )}
         <div className="result-identity">
           <span className="result-attribute">
-            Resultado <span aria-hidden="true">/</span> {attribute}
+            {automaticReason ? 'Resultado automático' : 'Resultado'}{' '}
+            <span aria-hidden="true">/</span> {attribute}
           </span>
           <h2 id={headingId} ref={headingRef} tabIndex={-1}>
             {result.name}
@@ -43,6 +46,11 @@ function ResultContent({
       </header>
       <div className={`result-body ${reference ? '' : 'simple-result'}`}>
         <section className="practical-description">
+          {automaticReason && (
+            <p className="comparison-note" role="status">
+              Consequência automática: {automaticReason} Não é necessário girar esta etapa.
+            </p>
+          )}
           <h3>{isTechnique ? 'Como funciona' : reference ? 'No seu personagem' : 'Descrição'}</h3>
           {result.adjustment && <p className="result-adjustment">{result.adjustment.label}</p>}
           <p>{result.description}</p>
@@ -143,6 +151,7 @@ export default function ResultReveal({
   onRetry,
   focusOnMount = true,
   reducedMotion = false,
+  automaticReason,
 }: {
   attribute: string;
   result: WheelOption;
@@ -150,6 +159,7 @@ export default function ResultReveal({
   onRetry?: () => void;
   focusOnMount?: boolean;
   reducedMotion?: boolean;
+  automaticReason?: string;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   const panel = useRef<HTMLElement>(null);
@@ -161,13 +171,16 @@ export default function ResultReveal({
     // Reveal more of a long result while leaving the bottom of the wheel as context.
     const bounds = panel.current?.getBoundingClientRect();
     const context = Math.min(144, window.innerHeight * 0.2);
-    if (bounds && bounds.bottom > window.innerHeight && bounds.top > context) {
+    if (bounds && automaticReason && bounds.top < 24) {
+      // Removing the wheel shortens this stage; keep its explanation in view.
+      window.scrollBy({ top: bounds.top - 24, behavior: reducedMotion ? 'instant' : 'smooth' });
+    } else if (bounds && bounds.bottom > window.innerHeight && bounds.top > context) {
       window.scrollBy({
         top: Math.min(bounds.top - context, bounds.bottom - window.innerHeight + 24),
         behavior: reducedMotion ? 'instant' : 'smooth',
       });
     }
-  }, [focusOnMount, reducedMotion]);
+  }, [focusOnMount, reducedMotion, automaticReason]);
   return (
     <section ref={panel} className="result-reveal" aria-labelledby="result-title">
       <ResultContent
@@ -175,6 +188,7 @@ export default function ResultReveal({
         result={result}
         headingId="result-title"
         headingRef={heading}
+        automaticReason={automaticReason}
       />
       <div className="result-actions">
         {import.meta.env.DEV && onRetry && (
@@ -195,11 +209,13 @@ export function ResultDialog({
   result,
   onClose,
   onRetry,
+  automaticReason,
 }: {
   attribute: string;
   result: WheelOption;
   onClose: () => void;
   onRetry?: () => void;
+  automaticReason?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -227,7 +243,12 @@ export function ResultDialog({
           Fechar <span aria-hidden="true">×</span>
         </button>
       </div>
-      <ResultContent attribute={attribute} result={result} headingId="detail-title" />
+      <ResultContent
+        attribute={attribute}
+        result={result}
+        headingId="detail-title"
+        automaticReason={automaticReason}
+      />
       {import.meta.env.DEV && onRetry && (
         <div className="test-retry-actions">
           <p>Repetir esta etapa apaga este resultado e os seguintes.</p>

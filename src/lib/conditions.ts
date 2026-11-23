@@ -84,12 +84,25 @@ export function playableWheel(wheel: WheelDefinition, state: RuleContext): Wheel
     ...wheel,
     name: simurian ? 'Reserva de rolloluca' : wheel.name,
     description: partial
-      ? 'A restrição limita a reserva a Muito baixa. O giro registra essa consequência (100%).'
+      ? 'A Restrição Celestial física parcial determina uma reserva Muito baixa. Esta consequência é registrada automaticamente.'
       : simurian
         ? 'Sorteie uma reserva equivalente de rolloluca na escala do jogo.'
         : wheel.description,
     options: partial ? wheel.options.filter((option) => option.id === 'very-low') : wheel.options,
   };
+}
+
+export function forcedOutcome(wheel: WheelDefinition, state: RuleContext) {
+  if (!isStageAvailable(wheel, state)) return undefined;
+  const options = playableWheel(wheel, state).options;
+  if (options.length !== 1) return undefined;
+  const option = options[0];
+  if (state.results[wheel.id] && state.results[wheel.id] !== option.id) return undefined;
+  const reason =
+    wheel.id === 'energy-reserve' && birthCondition(state) === 'physical-partial'
+      ? 'A Restrição Celestial física parcial limita a reserva a Muito baixa.'
+      : 'As condições anteriores deixam apenas uma opção compatível para esta etapa.';
+  return { option, reason };
 }
 
 export function resultDetails(stepId: string, state: RuleContext): WheelOption | undefined {
@@ -183,7 +196,7 @@ export function automaticOutcome(stepId: string, state: RuleContext): WheelOptio
     if (state.results.nature === 'independent-cursed-corpse')
       return {
         ...base,
-        name: 'Constituição artificial — sem catálogo de técnicas',
+        name: 'Técnica não catalogada nesta versão',
         description:
           'Seu corpo artificial independente permanece registrado. Panda é um exemplo de constituição com núcleos; isso não torna seus núcleos ou formas uma técnica inata universal, e não atribui núcleos extras ao personagem. Esta versão não sorteia técnicas humanas para essa natureza; isso não é uma incapacidade definitiva do cânone.',
         sources: [
@@ -196,7 +209,7 @@ export function automaticOutcome(stepId: string, state: RuleContext): WheelOptio
     if (state.results.nature === 'simurian')
       return {
         ...base,
-        name: 'Catálogo simuriano ainda não disponível',
+        name: 'Técnica não catalogada nesta versão',
         description:
           'A reserva de rolloluca permanece. Esta versão ainda não tem um catálogo fundamentado de habilidades simurianas para sortear, portanto não atribui técnicas humanas. A ausência de opções no jogo não significa ausência de habilidades no cânone.',
         sources: [

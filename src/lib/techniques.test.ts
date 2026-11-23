@@ -8,12 +8,18 @@ import {
   playableWheel,
   resultDetails,
   automaticOutcome,
+  forcedOutcome,
 } from './conditions.ts';
 import { gameReducer, initialState, parseSavedGame, type GameState } from './game.ts';
 import { getSegments, pickOption, landingRotation } from './wheel.ts';
 
 const stage = (id: string) => wheels.find((wheel) => wheel.id === id)!;
 function advance(state: GameState, optionId: string) {
+  if (state.phase === 'revealed') {
+    assert.ok(forcedOutcome(stage(state.stepId), state));
+    assert.equal(state.results[state.stepId], optionId);
+    return gameReducer(state, { type: 'continue' });
+  }
   const spinning = gameReducer(state, { type: 'spin', optionId });
   assert.equal(spinning.phase, 'spinning');
   assert.strictEqual(gameReducer(spinning, { type: 'spin', optionId }), spinning);
@@ -182,6 +188,10 @@ test('independent corpses and simurians skip human technique rules and record ca
     assert.equal(state.results['technique-presence'], undefined);
     assert.equal(state.results['innate-technique'], undefined);
     assert.equal(isStageAvailable(stage('technique-presence'), state), false);
+    assert.equal(
+      automaticOutcome('technique-presence', state)!.name,
+      'Técnica não catalogada nesta versão',
+    );
     assert.match(automaticOutcome('technique-presence', state)!.description, /cânone/);
     assert.deepEqual(parseSavedGame(JSON.stringify(state)), state);
   }

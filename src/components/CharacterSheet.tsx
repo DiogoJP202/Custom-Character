@@ -1,5 +1,5 @@
 import { chapters, wheels } from '../data/wheels.ts';
-import { isStageAvailable, resultDetails, wheelForStep } from '../lib/conditions.ts';
+import { forcedOutcome, isStageAvailable, resultDetails, wheelForStep } from '../lib/conditions.ts';
 import type { GameState } from '../lib/game.ts';
 
 export default function CharacterSheet({
@@ -15,6 +15,9 @@ export default function CharacterSheet({
       : state.results;
   const count = Object.keys(visibleResults).length;
   const visibleState = { ...state, results: visibleResults };
+  const automaticCount = wheels.filter(
+    (wheel) => visibleResults[wheel.id] && forcedOutcome(wheel, visibleState),
+  ).length;
   return (
     <aside className="character-sheet" aria-labelledby="sheet-title">
       <div className="sheet-header">
@@ -64,6 +67,14 @@ export default function CharacterSheet({
                         >
                           <span>
                             {result.name}
+                            {result.technique && result.reference?.character && (
+                              <small className="sheet-reference">
+                                Referência: {result.reference.character}
+                              </small>
+                            )}
+                            {forcedOutcome(wheel, visibleState) && (
+                              <small className="sheet-reference">Consequência automática</small>
+                            )}
                             {result.adjustment && (
                               <small className="sheet-effect">{result.adjustment.label}</small>
                             )}
@@ -86,7 +97,9 @@ export default function CharacterSheet({
       ))}
       <div className="sheet-footer">
         <strong>
-          {count} sorteio{count !== 1 ? 's' : ''} registrado{count !== 1 ? 's' : ''}
+          {count} resultado{count !== 1 ? 's' : ''} registrado{count !== 1 ? 's' : ''}
+          {automaticCount > 0 &&
+            ` · ${automaticCount} automático${automaticCount !== 1 ? 's' : ''}`}
         </strong>
         <p>
           {count

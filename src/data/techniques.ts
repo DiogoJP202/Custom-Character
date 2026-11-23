@@ -1,5 +1,5 @@
 import type { WheelOption } from './wheels.ts';
-import type { ReferenceFeat } from './references.ts';
+import type { ReferenceFeat, ReferenceSource } from './references.ts';
 
 const scene = (number: number, description: string, context: string): ReferenceFeat => ({
   description,
@@ -20,6 +20,7 @@ interface TechniqueEntry {
   initialUse: string;
   limitations: string;
   feats: ReferenceFeat[];
+  sources?: ReferenceSource[];
   nature: 'human' | 'cursed-spirit';
   lineage?: string;
   weight: number;
@@ -179,6 +180,12 @@ const entries: TechniqueEntry[] = [
     version: '1ª temporada',
     nature: 'human',
     lineage: 'zenin',
+    sources: [
+      {
+        label: 'Perfil oficial de Megumi · técnica hereditária Zen’in',
+        url: 'https://jujutsukaisen.jp/character/',
+      },
+    ],
     weight: 10,
     color: '#3d5663',
     description: 'Usa sombras como meio para invocar shikigamis da técnica hereditária Zen’in.',
@@ -250,6 +257,12 @@ const entries: TechniqueEntry[] = [
     version: '1ª temporada',
     nature: 'human',
     lineage: 'inumaki',
+    sources: [
+      {
+        label: 'Perfil oficial de Inumaki · linhagem de usuários da Fala Amaldiçoada',
+        url: 'https://jujutsukaisen.jp/character/index_1st.php',
+      },
+    ],
     weight: 10,
     color: '#4c5c52',
     description: 'Imbui palavras com energia para impor comandos a quem é afetado pela fala.',
@@ -273,6 +286,12 @@ const entries: TechniqueEntry[] = [
     version: 'Técnica hereditária Gojo · sem Seis Olhos concedidos',
     nature: 'human',
     lineage: 'gojo',
+    sources: [
+      {
+        label: 'Perfil oficial de Gojo · linhagem e Ilimitado',
+        url: 'https://jujutsukaisen.jp/character/index_2nd.php',
+      },
+    ],
     weight: 6,
     color: '#2e424f',
     description:

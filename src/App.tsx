@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { getWheelProgress } from './data/wheels.ts';
-import { isStageAvailable, resultDetails, wheelForStep } from './lib/conditions.ts';
+import { forcedOutcome, isStageAvailable, resultDetails, wheelForStep } from './lib/conditions.ts';
 import { gameReducer, loadGame, saveGame } from './lib/game.ts';
 import { getSegments, pickOption, SMALL_SEGMENT_THRESHOLD } from './lib/wheel.ts';
 import Wheel from './components/Wheel.tsx';
@@ -21,6 +21,7 @@ export default function App() {
   const firstRender = useRef(true);
   const wheel = wheelForStep(state.stepId, state)!;
   const result = resultDetails(state.stepId, state);
+  const forced = forcedOutcome(wheel, state);
   const terminal = state.phase === 'complete';
   const revealedResults =
     state.phase === 'spinning'
@@ -39,6 +40,8 @@ export default function App() {
   const inspectedWheel = inspectedStep ? wheelForStep(inspectedStep, state) : undefined;
   const inspectedResult =
     inspectedWheel && resultDetails(inspectedWheel.id, { ...state, results: revealedResults });
+  const inspectedForced =
+    inspectedWheel && forcedOutcome(inspectedWheel, { ...state, results: revealedResults });
   const completeSpin = useCallback(() => dispatch({ type: 'reveal' }), []);
 
   useEffect(() => {
@@ -60,7 +63,13 @@ export default function App() {
   }, [state.phase, state.stepId]);
 
   function spin() {
-    if (state.phase !== 'ready' || spinLock.current || state.results[state.stepId]) return;
+    if (
+      state.phase !== 'ready' ||
+      spinLock.current ||
+      state.results[state.stepId] ||
+      wheel.options.length <= 1
+    )
+      return;
     spinLock.current = true;
     const option = pickOption(wheel.options);
     saveGame(gameReducer(state, { type: 'spin', optionId: option.id }));
@@ -144,7 +153,7 @@ export default function App() {
               <button className="button button-primary" onClick={() => dispatch({ type: 'reset' })}>
                 Criar outro personagem
               </button>
-              {testMode && (
+              {testMode && !forced && (
                 <button className="button button-secondary" onClick={() => retry()}>
                   Tentar novamente
                 </button>
@@ -153,98 +162,106 @@ export default function App() {
             </section>
           ) : (
             <>
-              <Wheel
-                key={`${wheel.id}-${wheelRun}`}
-                definition={wheel}
-                spinning={state.phase === 'spinning'}
-                resultId={result?.id}
-                reducedMotion={reducedMotion}
-                onComplete={completeSpin}
-              />
-              <div className="wheel-interaction">
-                <p className="live-status" role="status" aria-live="polite">
-                  {state.phase === 'spinning'
-                    ? 'Girando…'
-                    : state.phase === 'revealed'
-                      ? `Resultado: ${result?.name}`
-                      : '\u00a0'}
-                </p>
-                {state.phase !== 'revealed' && (
-                  <>
-                    <button
-                      className="button button-primary spin-button"
-                      disabled={state.phase === 'spinning'}
-                      onClick={isIntro ? () => dispatch({ type: 'start' }) : spin}
-                      aria-label={
-                        isIntro
-                          ? 'Criar personagem'
-                          : state.phase === 'spinning'
-                            ? 'Girando roleta'
-                            : `Girar roleta de ${wheel.name}`
-                      }
-                    >
-                      {isIntro
-                        ? 'Criar personagem'
-                        : state.phase === 'spinning'
-                          ? 'Girando…'
-                          : 'Girar roleta'}
-                    </button>
-                    <p className="secondary-note">
-                      {isIntro
-                        ? 'Origem, condição especial, atributos físicos, energia e técnica.'
-                        : testMode
-                          ? 'Modo de teste: novos giros estão liberados.'
-                          : 'O resultado não pode ser alterado.'}
+              {!forced && (
+                <>
+                  <Wheel
+                    key={`${wheel.id}-${wheelRun}`}
+                    definition={wheel}
+                    spinning={state.phase === 'spinning'}
+                    resultId={result?.id}
+                    reducedMotion={reducedMotion}
+                    onComplete={completeSpin}
+                  />
+                  <div className="wheel-interaction">
+                    <p className="live-status" role="status" aria-live="polite">
+                      {state.phase === 'spinning'
+                        ? 'Girando…'
+                        : state.phase === 'revealed'
+                          ? `Resultado: ${result?.name}`
+                          : '\u00a0'}
                     </p>
-                  </>
-                )}
-              </div>
+                    {state.phase !== 'revealed' && (
+                      <>
+                        <button
+                          className="button button-primary spin-button"
+                          disabled={state.phase === 'spinning'}
+                          onClick={isIntro ? () => dispatch({ type: 'start' }) : spin}
+                          aria-label={
+                            isIntro
+                              ? 'Criar personagem'
+                              : state.phase === 'spinning'
+                                ? 'Girando roleta'
+                                : `Girar roleta de ${wheel.name}`
+                          }
+                        >
+                          {isIntro
+                            ? 'Criar personagem'
+                            : state.phase === 'spinning'
+                              ? 'Girando…'
+                              : 'Girar roleta'}
+                        </button>
+                        <p className="secondary-note">
+                          {isIntro
+                            ? 'Origem, condição especial, atributos físicos, energia e técnica.'
+                            : testMode
+                              ? 'Modo de teste: novos giros estão liberados.'
+                              : 'O resultado não pode ser alterado.'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
               {state.phase === 'revealed' && result && (
                 <ResultReveal
+                  key={wheel.id}
                   attribute={wheel.name}
                   result={result}
                   focusOnMount={!inspectedResult}
                   reducedMotion={reducedMotion}
+                  automaticReason={forced?.reason}
                   onContinue={() => dispatch({ type: 'continue' })}
-                  onRetry={testMode ? () => retry() : undefined}
+                  onRetry={testMode && !forced ? () => retry() : undefined}
                 />
               )}
-              <details className="probabilities" key={`probabilities-${wheel.id}`}>
-                <summary>
-                  Resultados e probabilidades{' '}
-                  <span>
-                    {segments.length} {segments.length === 1 ? 'opção' : 'opções'}
-                  </span>
-                </summary>
-                <ol className="wheel-legend">
-                  {segments.map(({ option, probability }, index) => (
-                    <li className="legend-item" key={option.id}>
-                      <span
-                        className="legend-marker"
-                        style={{ backgroundColor: option.color }}
-                        aria-label={
-                          probability < SMALL_SEGMENT_THRESHOLD
-                            ? `Marcador ${index + 1} na roleta`
-                            : undefined
-                        }
-                      >
-                        {index + 1}
-                      </span>
-                      <span className="legend-name">{option.name}</span>
-                      <span className="legend-percentage">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'percent',
-                          maximumFractionDigits: 2,
-                        }).format(probability)}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-                <p className="probability-note">
-                  Os pesos são escolhas do jogo, não frequências ou classificações oficiais. Os
-                  números identificam os segmentos na roleta.
-                </p>
-              </details>
+              {!forced && (
+                <details className="probabilities" key={`probabilities-${wheel.id}`}>
+                  <summary>
+                    Resultados e probabilidades{' '}
+                    <span>
+                      {segments.length} {segments.length === 1 ? 'opção' : 'opções'}
+                    </span>
+                  </summary>
+                  <ol className="wheel-legend">
+                    {segments.map(({ option, probability }, index) => (
+                      <li className="legend-item" key={option.id}>
+                        <span
+                          className="legend-marker"
+                          style={{ backgroundColor: option.color }}
+                          aria-label={
+                            probability < SMALL_SEGMENT_THRESHOLD
+                              ? `Marcador ${index + 1} na roleta`
+                              : undefined
+                          }
+                        >
+                          {index + 1}
+                        </span>
+                        <span className="legend-name">{option.name}</span>
+                        <span className="legend-percentage">
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'percent',
+                            maximumFractionDigits: 2,
+                          }).format(probability)}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="probability-note">
+                    Os pesos são escolhas do jogo, não frequências ou classificações oficiais. Os
+                    números identificam os segmentos na roleta.
+                  </p>
+                </details>
+              )}
             </>
           )}
         </section>
@@ -260,9 +277,13 @@ export default function App() {
         <ResultDialog
           attribute={inspectedWheel.name}
           result={inspectedResult}
+          automaticReason={inspectedForced?.reason}
           onClose={() => setInspectedStep(null)}
           onRetry={
-            testMode && state.phase !== 'spinning' && state.results[inspectedWheel.id]
+            testMode &&
+            !inspectedForced &&
+            state.phase !== 'spinning' &&
+            state.results[inspectedWheel.id]
               ? () => retry(inspectedWheel.id)
               : undefined
           }

@@ -7,11 +7,22 @@ import {
   physicalAdjustment,
   playableWheel,
   resultDetails,
+  forcedOutcome,
 } from './conditions.ts';
 import { gameReducer, initialState, parseSavedGame, type GameState } from './game.ts';
 import { getSegments, pickOption, landingRotation } from './wheel.ts';
 
 function commit(state: GameState, optionId: string) {
+  if (state.phase === 'revealed') {
+    assert.ok(
+      forcedOutcome(
+        wheels.find((wheel) => wheel.id === state.stepId)!,
+        state,
+      ),
+    );
+    assert.equal(state.results[state.stepId], optionId);
+    return gameReducer(state, { type: 'continue' });
+  }
   const spinning = gameReducer(state, { type: 'spin', optionId });
   assert.equal(spinning.phase, 'spinning');
   assert.strictEqual(gameReducer(spinning, { type: 'spin', optionId }), spinning);
@@ -221,7 +232,7 @@ test('development retries invalidate consequences and energy and return migrated
   assert.equal(commit(originRetry, 'gojo').stepId, 'birth-condition');
 });
 
-test('new weights, one-option energy and the pending PR distributions keep odds, segments and landing synchronized', () => {
+test('rebalanced catalog weights keep odds, segments and landing synchronized with restrictions', () => {
   assert.deepEqual(
     wheels.find((wheel) => wheel.id === 'birth-condition')!.options.map((option) => option.weight),
     [65, 15, 10, 10],
@@ -230,28 +241,25 @@ test('new weights, one-option energy and the pending PR distributions keep odds,
     wheels.find((wheel) => wheel.id === 'energy-reserve')!.options.map((option) => option.weight),
     [15, 25, 25, 20, 15],
   );
-  // PR #1, head dcbea1c: verify compatibility without applying or merging its weights.
-  const proposal: Record<string, number[]> = {
+  // PR #1 weights applied to the current catalog, preserving later stages and IDs.
+  const expectedWeights: Record<string, number[]> = {
     nature: [45, 30, 17, 8],
     lineage: [40, 15, 18, 17, 10],
     strength: [21, 19, 18, 17, 15, 10],
     speed: [26, 23, 20, 18, 13],
     endurance: [26, 22, 20, 18, 14],
   };
+  for (const [id, weights] of Object.entries(expectedWeights)) {
+    assert.deepEqual(
+      wheels.find((wheel) => wheel.id === id)!.options.map((option) => option.weight),
+      weights,
+    );
+  }
   for (const condition of ['none', 'physical-partial', 'physical-complete', 'body-limited']) {
     const state = born(condition);
     for (const wheel of wheels) {
       if (!isStageAvailable(wheel, state)) continue;
-      const options = playableWheel(
-        {
-          ...wheel,
-          options: wheel.options.map((option, i) => ({
-            ...option,
-            weight: proposal[wheel.id]?.[i] ?? option.weight,
-          })),
-        },
-        state,
-      ).options;
+      const options = playableWheel(wheel, state).options;
       for (const segment of getSegments(options)) {
         assert.equal(pickOption(options, () => segment.middle / 360).id, segment.option.id);
         assert.ok(Math.abs((segment.end - segment.start) / 360 - segment.probability) < 1e-10);

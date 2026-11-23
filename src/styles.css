@@ -578,6 +578,13 @@ h1 {
   font-weight: 400;
   color: #58616a;
 }
+.sheet-reference {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #58616a;
+}
 .sheet-effect {
   display: block;
   font-size: 13px;

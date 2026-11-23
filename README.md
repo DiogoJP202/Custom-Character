@@ -29,7 +29,7 @@ O build estático fica em `dist/`. O preview serve esse build localmente.
 - Capítulo 4 — Reserva: energia amaldiçoada ou rolloluca, conforme a natureza.
 - Capítulo 5 — Técnicas: presença (humanos 80/20; espíritos 90/10) e, quando elegível, técnica específica. Percentuais de gameplay.
 - Sorteio ponderado, segmentos proporcionais e parada no centro do resultado.
-- Uma rolagem por atributo, revelação, progressão e ficha parcial.
+- Uma rolagem por atributo, revelação, progressão e ficha parcial. Etapas com uma única opção compatível registram a consequência automaticamente, sem consumir aleatoriedade; a revelação aguarda Continuar.
 - Salvamento automático em `localStorage` (`jjk-spinner:v1`, formato v3). Um giro é registrado antes da animação; recarregar revela o mesmo resultado. Partidas v1/v2 preservam os resultados: humanos sem atributos físicos passam pela nova roleta de nascimento; quando já havia atributos físicos, a condição fica explicitamente **não registrada**, sem sorteio retroativo. Fichas antigas concluídas retomam na reserva.
 - Ao encerrar, uma nova criação apaga todos os resultados anteriores.
 - Layout responsivo, teclado, anúncio do resultado e preferência por movimento reduzido.
@@ -41,19 +41,19 @@ Se o navegador bloquear o armazenamento, a criação continua em memória até a
 
 Edite `src/data/wheels.ts` para alterar resultados, descrições, cores e pesos. Os pesos são normalizados automaticamente; não precisam somar 100. A legenda e os segmentos usam a mesma distribuição do sorteio.
 
-Natureza: Humano 70, Espírito amaldiçoado 20, Cadáver amaldiçoado independente 8, Simuriano 2.
+Natureza: Humano 45, Espírito amaldiçoado 30, Cadáver amaldiçoado independente 17, Simuriano 8.
 
-Linhagem: Sem clã conhecido 70, Gojo 5, Zen’in 10, Kamo 10, Inumaki 5.
+Linhagem: Sem clã conhecido 40, Gojo 15, Zen’in 18, Kamo 17, Inumaki 10. Força: 21/19/18/17/15/10; Velocidade: 26/23/20/18/13; Resistência: 26/22/20/18/14, na ordem das opções do catálogo.
 
 `chapters` define os títulos dos capítulos. Cada roleta aponta para um `chapterId`, contém suas opções e pode ter `availableWhen: { stepId, optionId }`. Cada resultado mantém identificador, nome, descrição, rótulo, peso e cor. Referências físicas em `src/data/references.ts` acrescentam versão, feitos com contexto e fontes e limites da comparação. A ordem do catálogo determina o fluxo e a validação de partidas.
 
-Humanos passam por Linhagem e Condição especial antes dos atributos físicos; outras naturezas pulam essas duas roletas. Cada atributo exige giro manual, revelação e Continuar. Segmentos menores que 10% usam marcadores numéricos maiores, correspondentes à legenda, sem alterar sua área. Alterações incompatíveis nos identificadores exigem uma migração explícita do salvamento.
+Humanos passam por Linhagem e Condição especial antes dos atributos físicos; outras naturezas pulam essas duas roletas. Etapas com mais de uma opção exigem giro manual, revelação e Continuar. Segmentos menores que 10% usam marcadores numéricos maiores, correspondentes à legenda, sem alterar sua área. Alterações incompatíveis nos identificadores exigem uma migração explícita do salvamento.
 
-`src/data/special.ts` contém as novas opções (condições: 65/15/10/10; reserva: 15/25/25/20/15). `src/lib/conditions.ts` centraliza as compatibilidades. As referências físicas sorteadas são preservadas; nas restrições, uma **capacidade efetiva qualitativa** prevalece explicitamente sobre a comparação, sem somar poderes. Parcial usa Maki do Intercâmbio como referência limitada; completa determina físico extraordinário e energia ausente; Kokichi determina corpo debilitado, sem confundir alcance/output com estoque. Para a parcial, a única reserva compatível é Muito baixa (giro manual de 100%).
+`src/data/special.ts` contém as opções de condições (65/15/10/10) e reserva (15/25/25/20/15). `src/lib/conditions.ts` centraliza as compatibilidades. As referências físicas sorteadas são preservadas; nas restrições, uma **capacidade efetiva qualitativa** prevalece explicitamente sobre a comparação, sem somar poderes. Parcial usa Maki do Intercâmbio como referência limitada; completa determina físico extraordinário e energia ausente; Kokichi determina corpo debilitado, sem confundir alcance/output com estoque. Para a parcial, a única reserva compatível é Muito baixa, registrada automaticamente. Saves antigos nessa etapa mantêm o resultado ou entram na revelação automática se ainda não o tinham.
 
 A escala de reserva é uma abstração comum de gameplay, com explicação específica para humanos, espíritos, corpos artificiais e rolloluca simuriana. Não representa equivalência biológica ou quantitativa entre naturezas. O termo rolloluca segue o briefing; detalhes de sua fisiologia não foram inferidos de wikis ou de capítulos indisponíveis. Yuta contextualiza grandes reservas no cap. 140, sem conceder Rika ou técnica. Os links para catálogos oficiais são referências de leitura, não transcrições desses capítulos.
 
-O [PR #1 de rebalanceamento](https://github.com/DiogoJP202/Custom-Character/pull/1) estava aberto na última consulta bem-sucedida. Nesta entrega, a consulta remota e o fetch do Git falharam por problemas de certificado HTTPS; seu estado atual não pôde ser confirmado. Nenhum merge ou mudança nos pesos anteriores foi feito. Os testes continuam exercitando as distribuições propostas para garantir compatibilidade.
+Os pesos do [PR #1 de rebalanceamento](https://github.com/DiogoJP202/Custom-Character/pull/1), confirmado aberto em 23/11/2026, foram aplicados diretamente ao catálogo atual, sem merge do PR nem substituição dos arquivos antigos.
 
 ### Técnicas
 
@@ -65,7 +65,7 @@ Cadáveres independentes e simurianos pulam as duas roletas; a ficha explica a c
 
 Partidas v3 concluídas retomam nas novas etapas elegíveis, mantendo o formato e os resultados anteriores. Saves v1/v2 continuam sendo validados pelo catálogo histórico de Origem/Físico e migrados. As regras de retry de desenvolvimento apagam a técnica ao repetir sua etapa ou a presença.
 
-**Limite de verificação desta entrega:** os acessos ao site oficial, VIZ, GitHub e busca falharam por certificado/transporte, inclusive no navegador. As fontes de episódios abaixo são indicações de leitura e as descrições são conservadoras; a conferência online atualizada permanece pendente. Cópia foi deixada fora até conferir suas condições de aquisição/armazenamento sem conceder Rika; Dagon, até separar invocações demonstradas em domínio de uma aplicação inicial sem domínio. Modulo continua sem catálogo de habilidades por falta de fundamentação suficiente. Jogo/Hanami usam rótulos descritivos, sem afirmar nomes oficiais não confirmados.
+Foram consultados os perfis e as sinopses oficiais do anime. As sinopses confirmam o contexto das cenas, mas não detalham todas as condições de ativação: os episódios indicados são as referências de leitura. Cópia fica fora até representar aquisição/armazenamento sem conceder Rika; Dagon, até separar suas invocações demonstradas em domínio (episódio 39) de uma aplicação inicial sem domínio. Modulo continua sem catálogo de habilidades por falta de fundamentação suficiente. Jogo/Hanami usam rótulos descritivos, sem afirmar nomes oficiais não confirmados.
 
 Referências de leitura das técnicas: episódios 1 (Cães Divinos), 7 (Gojo/Jogo), 10 (Nanami/Mahito), 16 (Mechamaru), 17 (Construção), 18 (Sangue), 19 (Fala/Hanami), 20 (Boogie Woogie), 24 (Boneco de Palha), 38 (Projeção) e JJK 0, capítulo 4/filme (Geto). Os links correspondentes ficam nos resultados. Não há reprodução de imagens ou textos desses materiais.
 
