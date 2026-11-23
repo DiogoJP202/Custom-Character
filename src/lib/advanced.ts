@@ -99,25 +99,33 @@ export function advancedAutomatic(id: string, state: RuleContext): WheelOption |
   return undefined;
 }
 
+export function recoveryExecution(state: RuleContext): 'unreliable' | 'limited' | 'conditional' {
+  const r = state.results;
+  if (r['energy-control'] === 'poor') return 'unreliable';
+  return r['energy-reserve'] === 'very-low' ||
+    r['energy-control'] === 'basic' ||
+    ['very-low', 'low'].includes(r['energy-output'])
+    ? 'limited'
+    : 'conditional';
+}
+
 function recoveryUse(option: WheelOption, state: RuleContext): string {
   const r = state.results;
   if (['no-rct', 'external-repair', 'natural-recovery', 'spirit-untrained'].includes(option.id))
     return option.description;
   const spirit = r.nature === 'cursed-spirit';
-  const scarce = r['energy-reserve'] === 'very-low';
-  const poor = r['energy-control'] === 'poor';
-  const basic = r['energy-control'] === 'basic';
-  const lowOutput = ['very-low', 'low'].includes(r['energy-output']);
+  const execution = recoveryExecution(state);
+  const poor = execution === 'unreliable';
   const base = poor
     ? 'Capacidade efetiva: execução instável, sem recuperação confiável nesta criação. O resultado aprendido permanece registrado; controle precário não sustenta uma aplicação segura.'
-    : scarce || basic || lowOutput
+    : execution === 'limited'
       ? 'Capacidade efetiva: no máximo tentativas pontuais de reparos limitados, sem garantir tratar lesões graves. Estoque, precisão ou liberação baixos impedem interpretar o resultado como regeneração contínua.'
       : option.id === 'heal-others'
         ? 'Pode tentar tratamentos próprios e em outra pessoa compatível, consumindo energia. Não há cura garantida, compatibilidade universal ou recuperação de qualquer ferimento.'
         : option.id === 'self-advanced' || option.id === 'spirit-developed'
           ? 'Pode explorar reparos próprios mais amplos dentro do repertório recebido, enquanto houver energia e controle suficientes. Não é restauração ilimitada ou proteção contra dano fatal.'
           : 'Pode tentar reparos próprios limitados, interrompendo-os quando o estoque ou a execução não sustentarem a aplicação. Não recebe cura de terceiros.';
-  return `${base}${option.id === 'heal-others' && (poor || scarce || basic || lowOutput) ? ' Curar terceiros foi sorteado, mas não é uma aplicação confiável com seus recursos atuais.' : ''}${spirit ? ' A recomposição usa energia amaldiçoada, não energia positiva de RCT.' : ' RCT não concede Reversão da Técnica Amaldiçoada.'}${condition(state) === 'body-limited' ? ' Não remove a Restrição Celestial ou corrige a debilidade de nascimento de Kokichi; só se refere a lesões tratáveis.' : ''}`;
+  return `${base}${option.id === 'heal-others' && execution !== 'conditional' ? ' Curar terceiros foi sorteado, mas não é uma aplicação confiável com seus recursos atuais.' : ''}${spirit ? ' A recomposição usa energia amaldiçoada, não energia positiva de RCT.' : ' RCT não concede Reversão da Técnica Amaldiçoada.'}${condition(state) === 'body-limited' ? ' Não remove a Restrição Celestial ou corrige a debilidade de nascimento de Kokichi; só se refere a lesões tratáveis.' : ''}`;
 }
 
 function defenseUse(option: WheelOption, state: RuleContext): string {

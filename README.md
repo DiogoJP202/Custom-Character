@@ -109,6 +109,10 @@ Não são atribuídos Vazio Infinito sem modelar Seis Olhos, domínio de Yorozu 
 
 Saves v3 concluídos retomam no primeiro estágio novo elegível, sem sorteios na restauração; os IDs e pesos anteriores continuam intactos. O workflow `.github/workflows/ci.yml` executa instalação, testes e build em Node 24 nos pushes e pull requests.
 
+### Ficha final
+
+Ao concluir os oito capítulos disponíveis, a criação vira um dossiê com identidade derivada, capacidades efetivas, estilo de combate, pontos fortes e limites. `src/lib/character-profile.ts` é uma interpretação pura dos resultados; reutiliza os resumos e critérios existentes de cura/domínio, sem novos sorteios, classes oficiais ou alterações de poderes. A ficha completa e suas fontes continuam consultáveis. Uma confirmação protege a substituição do único save. Chave, formato e resultados salvos permanecem iguais; nenhuma roleta foi adicionada nesta fase.
+
 ## Referências e limites de cânone
 
 Este é um projeto de fãs. **Comparações de desempenho, probabilidades e combinações são abstrações do jogo, não classificações oficiais.** Referências físicas não concedem técnicas, armas, regeneração ou a natureza do personagem citado. Megumi, Panda, Maki, Todo, Yuji e Hanami são considerados no arco do Intercâmbio; Toji, em Shibuya. “Sem clã conhecido” descreve a ausência de vínculo estabelecido pelo jogo, não uma classificação oficial.

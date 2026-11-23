@@ -81,7 +81,7 @@ function otherResources(state: RuleContext): string {
   return parts.join(' ');
 }
 
-function executionStatus(state: RuleContext): string {
+export function domainExecutionLimits(state: RuleContext): string[] {
   const r = state.results;
   const obstacles: string[] = [];
   if (['very-low', 'common'].includes(r['energy-reserve'])) obstacles.push('reserva limitada');
@@ -91,6 +91,11 @@ function executionStatus(state: RuleContext): string {
     obstacles.push('formação inicial em barreiras');
   if (['beginner', 'basic'].includes(r['technique-proficiency']))
     obstacles.push('proficiência inicial');
+  return obstacles;
+}
+
+function executionStatus(state: RuleContext): string {
+  const obstacles = domainExecutionLimits(state);
   return obstacles.length
     ? `Acesso desenvolvido, mas ativação e manutenção ainda não são confiáveis nesta interpretação do jogo: ${obstacles.join('; ')}.`
     : 'Seus recursos permitem tentar uma manifestação mais consistente nesta escala do jogo, sem garantir ativação, duração ou sucesso.';

@@ -13,9 +13,11 @@ import { domainSummary } from '../lib/domains.ts';
 export default function CharacterSheet({
   state,
   onInspect,
+  showSummaries = true,
 }: {
   state: GameState;
   onInspect: (stepId: string) => void;
+  showSummaries?: boolean;
 }) {
   const visibleResults =
     state.phase === 'spinning'
@@ -113,7 +115,7 @@ export default function CharacterSheet({
                 );
               })}
           </dl>
-          {chapter.id === 'mastery' && summary.length > 0 && (
+          {showSummaries && chapter.id === 'mastery' && summary.length > 0 && (
             <div className="sheet-context" aria-label="Resumo das capacidades">
               <h4>No conjunto</h4>
               {summary.map((paragraph) => (
@@ -122,7 +124,7 @@ export default function CharacterSheet({
               <small>Interpretação qualitativa do jogo.</small>
             </div>
           )}
-          {chapter.id === 'advanced' && resourceSummary.length > 0 && (
+          {showSummaries && chapter.id === 'advanced' && resourceSummary.length > 0 && (
             <div className="sheet-context" aria-label="Resumo dos recursos avançados">
               <h4>Recursos no conjunto</h4>
               {resourceSummary.map((paragraph) => (
@@ -131,7 +133,7 @@ export default function CharacterSheet({
               <small>Interpretação qualitativa do jogo.</small>
             </div>
           )}
-          {chapter.id === 'domains' && expansionSummary.length > 0 && (
+          {showSummaries && chapter.id === 'domains' && expansionSummary.length > 0 && (
             <div className="sheet-context" aria-label="Resumo de barreiras e domínio">
               <h4>Barreiras e manifestação</h4>
               {expansionSummary.map((paragraph) => (

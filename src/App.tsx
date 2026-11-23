@@ -5,6 +5,7 @@ import { gameReducer, loadGame, saveGame } from './lib/game.ts';
 import { getSegments, pickOption, SMALL_SEGMENT_THRESHOLD } from './lib/wheel.ts';
 import Wheel from './components/Wheel.tsx';
 import CharacterSheet from './components/CharacterSheet.tsx';
+import FinalCharacterSheet from './components/FinalCharacterSheet.tsx';
 import ResultReveal, { ResultDialog } from './components/ResultReveal.tsx';
 
 export default function App() {
@@ -118,11 +119,17 @@ export default function App() {
           </button>
         )}
       </header>
-      <main id="game" className="game-layout">
+      <main id="game" className={`game-layout ${terminal ? 'is-complete' : ''}`}>
         <section className="play-area" aria-labelledby="game-title">
           <div className="chapter-indicator">
             <span>
-              Capítulo {chapterLabel} <span aria-hidden="true">—</span> {chapter.name}
+              {terminal ? (
+                'Criação concluída'
+              ) : (
+                <>
+                  Capítulo {chapterLabel} <span aria-hidden="true">—</span> {chapter.name}
+                </>
+              )}
             </span>
             <span className="step-indicator">
               {terminal ? 'Concluído' : `Etapa ${stepNumber} / ${totalSteps}`}
@@ -130,9 +137,13 @@ export default function App() {
           </div>
           <div className="game-heading">
             <h1 id="game-title" ref={heading} tabIndex={-1}>
-              {terminal ? 'Criação concluída' : wheel.name}
+              {terminal ? 'Ficha final do personagem' : wheel.name}
             </h1>
-            <p>{terminal ? 'Consulte os resultados na ficha do personagem.' : wheel.description}</p>
+            <p>
+              {terminal
+                ? 'Identidade e capacidades derivadas dos seus resultados.'
+                : wheel.description}
+            </p>
             {state.legacyBirth && (
               <p className="secondary-note">
                 Partida anterior: condição de nascimento não registrada. Seus resultados foram
@@ -146,20 +157,12 @@ export default function App() {
             )}
           </div>
           {terminal ? (
-            <section className="completion-panel" aria-label="Criação concluída">
-              <span className="completion-label">Ficha parcial</span>
-              <h2>Todos os resultados registrados.</h2>
-              <p>Selecione um atributo na ficha para consultar sua explicação e referências.</p>
-              <button className="button button-primary" onClick={() => dispatch({ type: 'reset' })}>
-                Criar outro personagem
-              </button>
-              {testMode && !forced && (
-                <button className="button button-secondary" onClick={() => retry()}>
-                  Tentar novamente
-                </button>
-              )}
-              <p className="secondary-note">Substitui a ficha atual.</p>
-            </section>
+            <FinalCharacterSheet
+              state={state}
+              onInspect={setInspectedStep}
+              onReset={() => dispatch({ type: 'reset' })}
+              onRetry={testMode && !forced ? () => retry() : undefined}
+            />
           ) : (
             <>
               {!forced && (
@@ -265,7 +268,7 @@ export default function App() {
             </>
           )}
         </section>
-        <CharacterSheet state={state} onInspect={setInspectedStep} />
+        {!terminal && <CharacterSheet state={state} onInspect={setInspectedStep} />}
       </main>
       <footer className="site-footer">
         <span>
