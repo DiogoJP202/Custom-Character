@@ -17,6 +17,7 @@ import {
 import { gameReducer, initialState, parseSavedGame, type GameState, STORAGE_KEY } from './game.ts';
 import { forcedOutcome, playableWheel, resultDetails } from './conditions.ts';
 import { pickOption, getSegments, landingRotation } from './wheel.ts';
+import { resultChance } from './rarity.ts';
 import {
   creationProgress,
   loadSpinPace,
@@ -301,6 +302,36 @@ test('actual reveals keep full sourced content behind details, with no third-par
     at(path(), 'domain-expansion'),
     at(path({ 'technique-presence': 'no' }), 'technique-presence'),
     at(path({ 'birth-condition': 'physical-partial' }), 'energy-reserve'),
+    at(path({ 'birth-condition': 'physical-complete' }), 'strength'),
+    ...techniques.map((option) =>
+      at(
+        path({
+          nature: option.technique!.nature,
+          lineage: option.technique!.lineage ?? 'no-known-clan',
+          'innate-technique': option.id,
+        }),
+        'innate-technique',
+      ),
+    ),
+    ...['playful-cloud', 'inverted-spear', 'soul-katana'].map((equipment) =>
+      at(path({ equipment }), 'equipment'),
+    ),
+    at(
+      path({
+        nature: 'cursed-spirit',
+        'innate-technique': 'jogo-flames',
+        'domain-expansion': 'coffin-of-the-iron-mountain',
+      }),
+      'domain-expansion',
+    ),
+    at(
+      path({
+        nature: 'cursed-spirit',
+        'innate-technique': 'idle-transfiguration',
+        'domain-expansion': 'self-embodiment-of-perfection',
+      }),
+      'domain-expansion',
+    ),
   ]) {
     const result = resultDetails(state.stepId, state)!;
     const html = renderToStaticMarkup(
@@ -314,8 +345,10 @@ test('actual reveals keep full sourced content behind details, with no third-par
       }),
     );
     assert.match(html, /Continuar/);
+    assert.doesNotMatch(html, /reveal-live|effect-live|rarity-particles/);
     assert.doesNotMatch(html, /<iframe/);
     const [main, details] = html.split('<details class="quick-details">');
+    assert.doesNotMatch(main, /· ·/);
     assert.ok(details);
     assert.doesNotMatch(main, /reference-feats|reference-disclaimer/);
     if (result.reference) assert.match(details, /Feitos e contexto/);
@@ -327,6 +360,34 @@ test('actual reveals keep full sourced content behind details, with no third-par
       assert.match(main, /reveal-with-media/);
       assert.match(main, /Ver cena oficial/);
     }
+    const automatic = forcedOutcome(wheels.find((w) => w.id === state.stepId)!, state)?.reason;
+    const chance = resultChance(
+      playableWheel(wheels.find((w) => w.id === state.stepId)!, state),
+      result.id,
+      !!automatic,
+    );
+    const render = (props: object) =>
+      renderToStaticMarkup(
+        createElement(ResultReveal, {
+          stepId: state.stepId,
+          state,
+          attribute: state.stepId,
+          result,
+          onContinue() {},
+          chance,
+          automaticReason: automatic,
+          ...props,
+        }),
+      );
+    const live = render({ animate: true });
+    assert.match(live, /reveal-live/);
+    if (chance) assert.match(live, /Chance neste giro/);
+    else assert.doesNotMatch(live, /rarity-(common|uncommon|rare|epic|legendary)/);
+    assert.doesNotMatch(
+      render({ animate: true, reducedMotion: true }),
+      /reveal-live|effect-live|rarity-particles/,
+    );
+    if (chance) assert.match(render({ reconstructedChance: true }), /Recalculada.*histórica/);
   }
   assert.ok(techniques.length >= 14);
 });

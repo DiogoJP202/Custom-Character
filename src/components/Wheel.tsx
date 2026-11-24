@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { chapters, type WheelDefinition } from '../data/wheels.ts';
-import { getSegments, landingRotation, SMALL_SEGMENT_THRESHOLD } from '../lib/wheel.ts';
+import {
+  crossedSegments,
+  getSegments,
+  landingRotation,
+  spinProgress,
+  SMALL_SEGMENT_THRESHOLD,
+} from '../lib/wheel.ts';
 import { spinCompletion, spinDuration, type SpinPace } from '../lib/gameplay.ts';
 
 function point(angle: number, radius: number) {
@@ -17,6 +23,8 @@ export default function Wheel({
   resultId,
   reducedMotion,
   pace = 'standard',
+  reducedEffects = false,
+  onTick,
   onComplete,
 }: {
   definition: WheelDefinition;
@@ -24,6 +32,8 @@ export default function Wheel({
   resultId?: string;
   reducedMotion: boolean;
   pace?: SpinPace;
+  reducedEffects?: boolean;
+  onTick?: () => void;
   onComplete: () => void;
 }) {
   const segments = getSegments(definition.options);
@@ -31,29 +41,72 @@ export default function Wheel({
   const chapter = chapters[chapterIndex];
   const selected = segments.find(({ option }) => option.id === resultId);
   const targetRotation = selected ? landingRotation(selected) : 0;
-  const [rotation, setRotation] = useState(() =>
-    !spinning && selected ? landingRotation(selected, 0, 0) : 0,
-  );
-  const completion = useRef<ReturnType<typeof spinCompletion> | null>(null);
+  const disc = useRef<HTMLDivElement>(null);
+  const pointer = useRef<HTMLDivElement>(null);
   const duration = spinDuration(pace, reducedMotion);
 
   useEffect(() => {
     if (!spinning || !resultId) return;
     const run = spinCompletion(onComplete);
-    completion.current = run;
-    const frame = requestAnimationFrame(() => {
-      setRotation(targetRotation);
-      if (duration === 0) run.finish();
-    });
-    // Complete even if transition events are suppressed or the tab is hidden.
-    const timer = window.setTimeout(run.finish, duration + 80);
+    const boundaries = getSegments(definition.options);
+    let frame = 0,
+      settledTimer = 0;
+    let started: number | undefined,
+      previous = 0,
+      ended = false;
+    let kick: Animation | undefined;
+    const finish = () => {
+      if (ended) return;
+      ended = true;
+      if (disc.current) disc.current.style.transform = `rotate(${targetRotation}deg)`;
+      run.finish();
+    };
+    const update = (now: number) => {
+      if (ended) return;
+      started ??= now;
+      const elapsed = duration === 0 ? 1 : Math.min(1, (now - started) / duration);
+      const angle = targetRotation * spinProgress(elapsed);
+      if (disc.current) {
+        disc.current.style.transform = `rotate(${angle}deg)`;
+        if (elapsed > 0.98) disc.current.dataset.settled = 'true';
+      }
+      if (duration && crossedSegments(boundaries, previous, angle) > 0) {
+        onTick?.();
+        if (!reducedEffects) {
+          kick?.cancel();
+          kick = pointer.current?.animate(
+            [{ transform: 'rotate(-9deg)' }, { transform: 'rotate(0)' }],
+            { duration: 75 },
+          );
+        }
+      }
+      previous = angle;
+      if (elapsed < 1) frame = requestAnimationFrame(update);
+      else if (!duration) finish();
+      else settledTimer = window.setTimeout(finish, 80);
+    };
+    frame = requestAnimationFrame(update);
+    // Hidden tabs still reveal the already committed result, with exactly one callback.
+    const timer = window.setTimeout(finish, duration + 120);
     return () => {
+      ended = true;
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
+      window.clearTimeout(settledTimer);
+      kick?.cancel();
       run.cancel();
-      if (completion.current === run) completion.current = null;
     };
-  }, [spinning, resultId, targetRotation, duration, onComplete]);
+    // The keyed wheel keeps its eligible options fixed for this run.
+  }, [
+    spinning,
+    resultId,
+    targetRotation,
+    duration,
+    onComplete,
+    onTick,
+    reducedEffects,
+    definition.id,
+  ]);
 
   return (
     <div className={`wheel-stage ${spinning ? 'is-spinning' : ''}`}>
@@ -74,21 +127,13 @@ export default function Wheel({
           );
         })}
       </svg>
-      <div className="wheel-pointer" aria-hidden="true" />
+      <div ref={pointer} className="wheel-pointer" aria-hidden="true" />
       <div className="wheel-rim">
         <div
           className="wheel-disc"
+          ref={disc}
           style={{
-            transform: `rotate(${rotation}deg)`,
-            transitionDuration: `${duration}ms`,
-          }}
-          onTransitionEnd={(event) => {
-            if (
-              event.target === event.currentTarget &&
-              event.propertyName === 'transform' &&
-              spinning
-            )
-              completion.current?.finish();
+            transform: `rotate(${!spinning && selected ? landingRotation(selected, 0, 0) : 0}deg)`,
           }}
         >
           <svg
@@ -102,7 +147,10 @@ export default function Wheel({
                 to = point(end, 195),
                 label = point(middle, small ? 155 : 135);
               return (
-                <g key={option.id}>
+                <g
+                  key={option.id}
+                  className={spinning && option.id === resultId ? 'winning-segment' : undefined}
+                >
                   <title>
                     {option.name} ·{' '}
                     {new Intl.NumberFormat('pt-BR', {

@@ -1,7 +1,13 @@
 import { creationProgress } from '../lib/gameplay.ts';
 import type { GameState } from '../lib/game.ts';
 
-export default function CreationProgress({ state }: { state: GameState }) {
+export default function CreationProgress({
+  state,
+  feedback = '',
+}: {
+  state: GameState;
+  feedback?: string;
+}) {
   const progress = creationProgress(state);
   return (
     <section className="creation-progress" aria-label="Progresso da criação">
@@ -33,6 +39,9 @@ export default function CreationProgress({ state }: { state: GameState }) {
           </li>
         ))}
       </ol>
+      <p className={`chapter-feedback ${feedback ? 'has-feedback' : ''}`} role="status">
+        {feedback || '\u00a0'}
+      </p>
       {progress.latest?.name && (
         <p className="latest-result">
           <span>Mais recente / {progress.latest.attribute}</span> {progress.latest.name}

@@ -6,23 +6,38 @@ import {
   mediaStatus,
 } from '../data/reveal-media.ts';
 import type { RevealKind } from '../lib/gameplay.ts';
+import { effectForResult } from '../data/reveal-effects.ts';
+import RevealEffect from './RevealEffect.tsx';
 
 export default function ResultMedia({
   stepId,
   resultId,
   kind,
+  animate = false,
 }: {
   stepId: string;
   resultId: string;
   kind: RevealKind;
+  animate?: boolean;
 }) {
   const media = mediaForResult(stepId, resultId);
+  const visual = effectForResult(stepId, resultId);
   const [status, mediaEvent] = useReducer(mediaStatus, 'idle');
   useEffect(() => {
     if (status !== 'loading') return;
     const timeout = window.setTimeout(() => mediaEvent('failed'), 12000);
     return () => window.clearTimeout(timeout);
   }, [status]);
+  if (!media && visual)
+    return (
+      <figure className="result-media result-visual">
+        <RevealEffect visual={visual} animate={animate} />
+        <figcaption>
+          Ilustração original ·{' '}
+          {stepId === 'equipment' ? 'Posse não concede perícia.' : 'Representação abstrata.'}
+        </figcaption>
+      </figure>
+    );
   if (!media)
     return kind === 'common' ? null : (
       <div className={`reveal-imprint imprint-${kind}`} aria-hidden="true">
@@ -58,14 +73,20 @@ export default function ResultMedia({
             Não foi possível carregar o player. Você pode continuar ou abrir a fonte.
           </p>
         ) : (
-          <button className="media-load" onClick={() => mediaEvent('open')}>
-            <span className="media-play" aria-hidden="true">
-              ▶
-            </span>
-            <span>
-              Ver cena oficial <small>{media.source} / YouTube · carregar player</small>
-            </span>
-          </button>
+          <>
+            {visual && <RevealEffect visual={visual} animate={animate} />}
+            <button
+              className={`media-load ${visual ? 'media-load-overlay' : ''}`}
+              onClick={() => mediaEvent('open')}
+            >
+              <span className="media-play" aria-hidden="true">
+                ▶
+              </span>
+              <span>
+                Ver cena oficial <small>{media.source} / YouTube · carregar player</small>
+              </span>
+            </button>
+          </>
         )}
       </div>
       <figcaption>

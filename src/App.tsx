@@ -9,7 +9,23 @@ import FinalCharacterSheet from './components/FinalCharacterSheet.tsx';
 import ResultReveal, { ResultDialog } from './components/ResultReveal.tsx';
 import CharacterGallery, { GalleryNameDialog } from './components/CharacterGallery.tsx';
 import CreationProgress from './components/CreationProgress.tsx';
-import { loadSpinPace, saveSpinPace, PREFERENCES_KEY } from './lib/gameplay.ts';
+import {
+  loadSpinPace,
+  saveSpinPace,
+  PREFERENCES_KEY,
+  revealPresentation,
+  type RevealKind,
+  type SpinPace,
+} from './lib/gameplay.ts';
+import { resultChance } from './lib/rarity.ts';
+import {
+  createGameAudio,
+  FEEDBACK_PREFERENCES_KEY,
+  loadFeedbackPreferences,
+  saveFeedbackPreferences,
+  revealCue,
+  type FeedbackPreferences,
+} from './lib/game-audio.ts';
 import {
   GALLERY_STORAGE_KEY,
   loadGallery,
@@ -27,6 +43,22 @@ export default function App() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [pace, setPace] = useState(loadSpinPace);
+  const [feedback, setFeedback] = useState(loadFeedbackPreferences);
+  const [audio] = useState(createGameAudio);
+  const [audioError, setAudioError] = useState(false);
+  const feedbackChange = useRef(0);
+  const [chapterFeedback, setChapterFeedback] = useState('');
+  const [finalArrival, setFinalArrival] = useState(false);
+  const liveDraw = useRef<{
+    stepId: string;
+    resultId: string;
+    chance: NonNullable<ReturnType<typeof resultChance>>;
+    kind: RevealKind;
+    finished: boolean;
+    effectsStopped?: boolean;
+    pace: SpinPace;
+    reducedEffects: boolean;
+  } | null>(null);
   const focusAfterSave = useRef(false);
   const savedCharacter = findSavedCharacter(gallery.records, state);
   const [inspectedStep, setInspectedStep] = useState<string | null>(null);
@@ -62,7 +94,54 @@ export default function App() {
     inspectedWheel && resultDetails(inspectedWheel.id, { ...state, results: revealedResults });
   const inspectedForced =
     inspectedWheel && forcedOutcome(inspectedWheel, { ...state, results: revealedResults });
-  const completeSpin = useCallback(() => dispatch({ type: 'reveal' }), []);
+  const completeSpin = useCallback(() => {
+    const draw = liveDraw.current;
+    if (!draw || draw.finished) return;
+    draw.finished = true;
+    if (document.visibilityState === 'visible')
+      audio.play(revealCue(draw.kind, draw.chance.rarity), true);
+    dispatch({ type: 'reveal' });
+  }, [audio]);
+  const tick = useCallback(() => {
+    if (document.visibilityState === 'visible') audio.play('tick');
+  }, [audio]);
+  const freshReveal =
+    !!liveDraw.current?.finished &&
+    liveDraw.current.stepId === state.stepId &&
+    liveDraw.current.resultId === result?.id;
+  const chance = freshReveal
+    ? liveDraw.current!.chance
+    : result && resultChance(wheel, result.id, !!forced);
+  const quietEffects = reducedMotion || feedback.reducedEffects;
+  function inspect(stepId: string) {
+    audio.stop();
+    if (liveDraw.current) liveDraw.current.effectsStopped = true;
+    setInspectedStep(stepId);
+  }
+  function updateFeedback(next: FeedbackPreferences) {
+    feedbackChange.current++;
+    audio.configure(next);
+    setFeedback(next);
+  }
+  useEffect(() => {
+    audio.configure(feedback);
+    saveFeedbackPreferences(feedback);
+  }, [feedback, audio]);
+  useEffect(() => {
+    const hidden = () => {
+      if (document.visibilityState !== 'visible') audio.suspend();
+    };
+    document.addEventListener('visibilitychange', hidden);
+    return () => {
+      document.removeEventListener('visibilitychange', hidden);
+      audio.dispose();
+    };
+  }, [audio]);
+  useEffect(() => {
+    if (!chapterFeedback) return;
+    const timer = window.setTimeout(() => setChapterFeedback(''), 2600);
+    return () => window.clearTimeout(timer);
+  }, [chapterFeedback]);
   useEffect(() => {
     if (!saveOpen && focusAfterSave.current) {
       heading.current?.focus();
@@ -74,10 +153,15 @@ export default function App() {
     const synchronize = (event: StorageEvent) => {
       if (event.key === GALLERY_STORAGE_KEY || event.key === null) setGallery(loadGallery());
       if (event.key === PREFERENCES_KEY || event.key === null) setPace(loadSpinPace());
+      if (event.key === FEEDBACK_PREFERENCES_KEY || event.key === null) {
+        feedbackChange.current++;
+        audio.stop();
+        setFeedback(loadFeedbackPreferences());
+      }
     };
     window.addEventListener('storage', synchronize);
     return () => window.removeEventListener('storage', synchronize);
-  }, []);
+  }, [audio]);
   useEffect(() => {
     saveSpinPace(pace);
   }, [pace]);
@@ -116,8 +200,38 @@ export default function App() {
       return;
     spinLock.current = true;
     const option = pickOption(wheel.options);
+    const draw = {
+      stepId: wheel.id,
+      resultId: option.id,
+      chance: resultChance(wheel, option.id)!,
+      kind: revealPresentation(wheel.id, option, state).kind,
+      finished: false,
+      pace,
+      reducedEffects: feedback.reducedEffects,
+    };
+    liveDraw.current = draw;
+    void audio.activate().then((ready) => {
+      if (ready && liveDraw.current === draw && !draw.finished) audio.play('spin');
+    });
     saveGame(gameReducer(state, { type: 'spin', optionId: option.id }));
     dispatch({ type: 'spin', optionId: option.id });
+  }
+
+  function continueCreation() {
+    if (state.phase !== 'revealed') return;
+    const next = gameReducer(state, { type: 'continue' });
+    if (next === state) return;
+    audio.stop();
+    liveDraw.current = null;
+    const completed = next.phase === 'complete';
+    if (completed || wheelForStep(next.stepId, next)?.chapterId !== wheel.chapterId) {
+      setChapterFeedback(`Capítulo ${chapterLabel} concluído · ${chapter.name}`);
+      void audio.activate().then((ready) => {
+        if (ready) audio.play(completed ? 'complete' : 'chapter');
+      });
+    }
+    setFinalArrival(completed);
+    dispatch({ type: 'continue' });
   }
 
   function retry(stepId = state.stepId) {
@@ -125,6 +239,10 @@ export default function App() {
     const action = { type: 'retry' as const, stepId, testMode };
     const next = gameReducer(state, action);
     if (next === state) return;
+    audio.stop();
+    liveDraw.current = null;
+    setFinalArrival(false);
+    setChapterFeedback('');
     saveGame(next);
     setInspectedStep(null);
     setWheelRun((run) => run + 1);
@@ -136,6 +254,9 @@ export default function App() {
     const next = gameReducer(state, action);
     setCancelOpen(false);
     if (next === state) return;
+    audio.stop();
+    liveDraw.current = null;
+    setChapterFeedback('');
     saveGame(next);
     spinLock.current = false;
     setInspectedStep(null);
@@ -144,7 +265,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${quietEffects ? 'effects-reduced' : ''}`}>
       <a className="skip-link" href="#game">
         Pular para o jogo
       </a>
@@ -167,6 +288,10 @@ export default function App() {
           disabled={state.phase === 'spinning'}
           aria-pressed={view === 'gallery'}
           onClick={() => {
+            audio.stop();
+            liveDraw.current = null;
+            setFinalArrival(false);
+            setChapterFeedback('');
             setInspectedStep(null);
             setGallery(loadGallery());
             setView((current) => (current === 'creation' ? 'gallery' : 'creation'));
@@ -174,6 +299,73 @@ export default function App() {
         >
           {view === 'gallery' ? 'Voltar à criação' : 'Meus personagens'}
         </button>
+        <details
+          className="feedback-settings"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.currentTarget.open = false;
+              event.currentTarget.querySelector('summary')?.focus();
+            }
+          }}
+        >
+          <summary>Som e efeitos</summary>
+          <div className="feedback-panel">
+            <button
+              aria-pressed={feedback.sound}
+              onClick={() => {
+                const next = { ...feedback, sound: !feedback.sound };
+                updateFeedback(next);
+                setAudioError(false);
+                const change = feedbackChange.current;
+                if (next.sound)
+                  void audio.activate().then((ready) => {
+                    if (change !== feedbackChange.current) return;
+                    if (ready) audio.play('common');
+                    else if (audio.unavailable && next.volume > 0) {
+                      setAudioError(true);
+                      updateFeedback({ ...next, sound: false });
+                    }
+                  });
+              }}
+            >
+              Som {feedback.sound ? 'ligado' : 'desligado'}
+            </button>
+            <label>
+              Volume{' '}
+              <input
+                aria-label="Volume do jogo"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={Math.round(feedback.volume * 100)}
+                onChange={(event) =>
+                  updateFeedback({ ...feedback, volume: Number(event.target.value) / 100 })
+                }
+              />{' '}
+              <output>{Math.round(feedback.volume * 100)}%</output>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={feedback.reducedEffects}
+                disabled={state.phase === 'spinning'}
+                onChange={(event) =>
+                  updateFeedback({ ...feedback, reducedEffects: event.target.checked })
+                }
+              />{' '}
+              Reduzir efeitos visuais
+            </label>
+            <small>
+              {reducedMotion
+                ? 'Movimento reduzido do sistema respeitado.'
+                : 'Efeitos curtos; nenhuma animação bloqueia Continuar.'}
+            </small>
+            {audioError && (
+              <p role="status">Áudio indisponível neste navegador. O jogo continua sem som.</p>
+            )}
+          </div>
+        </details>
         {import.meta.env.DEV && (
           <button
             className={`test-mode-toggle ${testMode ? 'is-active' : ''}`}
@@ -195,7 +387,10 @@ export default function App() {
           onDelete={(id) => applyGalleryResult(deleteCharacter(id, true))}
         />
       ) : (
-        <main id="game" className={`game-layout ${terminal ? 'is-complete' : ''}`}>
+        <main
+          id="game"
+          className={`game-layout ${terminal ? 'is-complete' : ''} ${terminal && finalArrival ? 'final-arrival' : ''}`}
+        >
           <section className="play-area" aria-labelledby="game-title">
             <div className="chapter-indicator">
               <span>
@@ -250,7 +445,11 @@ export default function App() {
                     <button
                       className="creation-cancel"
                       aria-haspopup="dialog"
-                      onClick={() => setCancelOpen(true)}
+                      onClick={() => {
+                        audio.stop();
+                        if (liveDraw.current) liveDraw.current.effectsStopped = true;
+                        setCancelOpen(true);
+                      }}
                     >
                       Cancelar criação
                     </button>
@@ -263,12 +462,18 @@ export default function App() {
                 </p>
               )}
             </div>
-            {!isIntro && !terminal && <CreationProgress state={state} />}
+            {!isIntro && !terminal && <CreationProgress state={state} feedback={chapterFeedback} />}
             {terminal ? (
               <FinalCharacterSheet
                 state={state}
-                onInspect={setInspectedStep}
-                onReset={() => dispatch({ type: 'reset' })}
+                onInspect={inspect}
+                onReset={() => {
+                  audio.stop();
+                  liveDraw.current = null;
+                  setFinalArrival(false);
+                  setChapterFeedback('');
+                  dispatch({ type: 'reset' });
+                }}
                 onSave={() => setSaveOpen(true)}
                 savedName={savedCharacter?.name}
                 characterName={savedCharacter?.name}
@@ -284,7 +489,14 @@ export default function App() {
                       spinning={state.phase === 'spinning'}
                       resultId={result?.id}
                       reducedMotion={reducedMotion}
-                      pace={pace}
+                      pace={state.phase === 'spinning' ? (liveDraw.current?.pace ?? pace) : pace}
+                      reducedEffects={
+                        reducedMotion ||
+                        (state.phase === 'spinning'
+                          ? liveDraw.current?.reducedEffects
+                          : feedback.reducedEffects)
+                      }
+                      onTick={tick}
                       onComplete={completeSpin}
                     />
                     <div className="wheel-interaction">
@@ -329,9 +541,12 @@ export default function App() {
                     attribute={wheel.name}
                     result={result}
                     focusOnMount={!inspectedResult && !cancelOpen}
-                    reducedMotion={reducedMotion}
+                    reducedMotion={quietEffects}
+                    animate={freshReveal && !quietEffects && !liveDraw.current?.effectsStopped}
+                    chance={chance || undefined}
+                    reconstructedChance={!freshReveal}
                     automaticReason={forced?.reason}
-                    onContinue={() => dispatch({ type: 'continue' })}
+                    onContinue={continueCreation}
                     onRetry={testMode && !forced ? () => retry() : undefined}
                   />
                 )}
@@ -369,7 +584,8 @@ export default function App() {
                     </ol>
                     <p className="probability-note">
                       Os pesos são escolhas do jogo, não frequências ou classificações oficiais. Os
-                      números identificam os segmentos na roleta.
+                      números identificam os segmentos na roleta. A raridade descreve a chance nesta
+                      roleta após os filtros, não o poder nem a chance de toda a combinação.
                     </p>
                   </details>
                 )}
@@ -377,12 +593,7 @@ export default function App() {
             )}
           </section>
           {!terminal && (
-            <CharacterSheet
-              state={state}
-              onInspect={setInspectedStep}
-              compact
-              showSummaries={false}
-            />
+            <CharacterSheet state={state} onInspect={inspect} compact showSummaries={false} />
           )}
         </main>
       )}

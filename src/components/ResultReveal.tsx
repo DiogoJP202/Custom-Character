@@ -4,6 +4,8 @@ import { revealPresentation } from '../lib/gameplay.ts';
 import type { RuleContext } from '../lib/conditions.ts';
 import ResultMedia from './ResultMedia.tsx';
 import { mediaForResult } from '../data/reveal-media.ts';
+import { effectForResult } from '../data/reveal-effects.ts';
+import { formatChance, rarityLabels, type Rarity } from '../lib/rarity.ts';
 
 function ResultContent({
   attribute,
@@ -228,6 +230,9 @@ export default function ResultReveal({
   focusOnMount = true,
   reducedMotion = false,
   automaticReason,
+  animate = false,
+  chance,
+  reconstructedChance = false,
 }: {
   stepId: string;
   state: RuleContext;
@@ -238,8 +243,12 @@ export default function ResultReveal({
   focusOnMount?: boolean;
   reducedMotion?: boolean;
   automaticReason?: string;
+  animate?: boolean;
+  chance?: { probability: number; rarity: Rarity };
+  reconstructedChance?: boolean;
 }) {
   const presentation = revealPresentation(stepId, result, state);
+  const effectsActive = animate && !reducedMotion;
   const heading = useRef<HTMLHeadingElement>(null);
   const panel = useRef<HTMLElement>(null);
   const hasFocused = useRef(false);
@@ -249,7 +258,13 @@ export default function ResultReveal({
     heading.current?.focus({ preventScroll: true });
     // The reveal occupies the wheel's space; only scroll if it is outside the reading area.
     const bounds = panel.current?.getBoundingClientRect();
-    if (bounds && (bounds.top < 12 || bounds.top > window.innerHeight * 0.55)) {
+    const actions = panel.current?.querySelector('.result-actions')?.getBoundingClientRect();
+    if (
+      bounds &&
+      (bounds.top < 12 ||
+        bounds.top > window.innerHeight * 0.55 ||
+        (actions && actions.bottom > window.innerHeight - 16))
+    ) {
       window.scrollBy({
         top: bounds.top - 24,
         behavior: reducedMotion ? 'instant' : 'smooth',
@@ -259,7 +274,7 @@ export default function ResultReveal({
   return (
     <section
       ref={panel}
-      className={`result-reveal quick-reveal reveal-${presentation.kind} ${automaticReason ? 'reveal-automatic' : ''} ${mediaForResult(stepId, result.id) ? 'reveal-with-media' : ''}`}
+      className={`result-reveal quick-reveal reveal-${presentation.kind} ${effectsActive ? 'reveal-live' : ''} ${chance && !automaticReason ? `rarity-${chance.rarity}` : ''} ${automaticReason ? 'reveal-automatic' : ''} ${mediaForResult(stepId, result.id) || effectForResult(stepId, result.id) ? 'reveal-with-media' : ''}`}
       aria-labelledby="result-title"
     >
       <header className="quick-result-header">
@@ -269,11 +284,35 @@ export default function ResultReveal({
         <h2 id="result-title" ref={heading} tabIndex={-1}>
           {result.name}
         </h2>
+        {chance && !automaticReason && (
+          <p
+            className="result-chance"
+            title="Chance condicional desta roleta, após os filtros. Categoria visual do jogo, sem relação com poder ou grau oficial."
+          >
+            <span>{rarityLabels[chance.rarity]}</span>{' '}
+            {reconstructedChance ? 'Chance no catálogo atual' : 'Chance neste giro'}:{' '}
+            <strong>{formatChance(chance.probability)}</strong>
+            {reconstructedChance && (
+              <small>Recalculada; não é uma probabilidade histórica registrada.</small>
+            )}
+          </p>
+        )}
+        {effectsActive && chance && chance.rarity !== 'common' && (
+          <div className="rarity-particles" aria-hidden="true">
+            {Array.from({ length: 8 }, (_, i) => (
+              <i key={i} style={{ left: `${12 + i * 11}%`, animationDelay: `${i * 35}ms` }} />
+            ))}
+          </div>
+        )}
         {result.reference && !['energy', 'proficiency'].includes(result.reference.topic ?? '') && (
           <p className="quick-reference">
-            {result.adjustment ? 'Referência sorteada · ' : ''}
-            {result.reference.character}
-            {!result.domain && ` · ${result.reference.version}`}
+            {[
+              result.adjustment ? 'Referência sorteada' : undefined,
+              result.reference.character ?? (result.adjustment ? result.name : undefined),
+              !result.domain ? result.reference.version : undefined,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
         )}
         {result.domain && (
@@ -294,6 +333,7 @@ export default function ResultReveal({
         stepId={stepId}
         resultId={result.id}
         kind={presentation.kind}
+        animate={effectsActive}
       />
       <div className="quick-result-copy">
         <p className="quick-description">{presentation.summary}</p>

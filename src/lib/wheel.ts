@@ -46,3 +46,20 @@ export function landingRotation(segment: Segment, previous = 0, turns = 6): numb
   const normalized = ((previous % 360) + 360) % 360;
   return previous + turns * 360 + ((target - normalized + 360) % 360);
 }
+
+// Integral of a brief acceleration followed by a long deceleration. The same angle
+// drives the SVG and the segment ticks; there is no second animation or random draw.
+export function spinProgress(time: number) {
+  const t = Math.max(0, Math.min(1, time));
+  // Cumulative beta(2, 5): monotone, zero velocity at both ends, exact endpoints.
+  return 1 - (1 - t) ** 5 * (1 + 5 * t);
+}
+
+export function crossedSegments(segments: Segment[], from: number, to: number) {
+  if (to <= from) return 0;
+  // A segment's end crosses the fixed top pointer at rotation (360 - end) + n*360.
+  return segments.reduce((count, segment) => {
+    const boundary = (360 - segment.end) % 360;
+    return count + Math.floor((to - boundary) / 360) - Math.floor((from - boundary) / 360);
+  }, 0);
+}
