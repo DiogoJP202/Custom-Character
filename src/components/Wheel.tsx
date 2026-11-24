@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { chapters, type WheelDefinition } from '../data/wheels.ts';
 import { getSegments, landingRotation, SMALL_SEGMENT_THRESHOLD } from '../lib/wheel.ts';
+import { spinCompletion, spinDuration, type SpinPace } from '../lib/gameplay.ts';
 
 function point(angle: number, radius: number) {
   const radians = ((angle - 90) * Math.PI) / 180;
-  return { x: 200 + radius * Math.cos(radians), y: 200 + radius * Math.sin(radians) };
+  return {
+    x: 200 + radius * Math.cos(radians),
+    y: 200 + radius * Math.sin(radians),
+  };
 }
 
 export default function Wheel({
@@ -12,12 +16,14 @@ export default function Wheel({
   spinning,
   resultId,
   reducedMotion,
+  pace = 'standard',
   onComplete,
 }: {
   definition: WheelDefinition;
   spinning: boolean;
   resultId?: string;
   reducedMotion: boolean;
+  pace?: SpinPace;
   onComplete: () => void;
 }) {
   const segments = getSegments(definition.options);
@@ -28,19 +34,24 @@ export default function Wheel({
   const [rotation, setRotation] = useState(() =>
     !spinning && selected ? landingRotation(selected, 0, 0) : 0,
   );
-  const started = useRef(false);
-  const duration = reducedMotion ? 100 : 4400;
+  const completion = useRef<ReturnType<typeof spinCompletion> | null>(null);
+  const duration = spinDuration(pace, reducedMotion);
 
   useEffect(() => {
-    if (!spinning || !resultId || started.current) return;
-    started.current = true;
-    const frame = requestAnimationFrame(() => setRotation(targetRotation));
+    if (!spinning || !resultId) return;
+    const run = spinCompletion(onComplete);
+    completion.current = run;
+    const frame = requestAnimationFrame(() => {
+      setRotation(targetRotation);
+      if (duration === 0) run.finish();
+    });
     // Complete even if transition events are suppressed or the tab is hidden.
-    const timer = window.setTimeout(onComplete, duration + 100);
+    const timer = window.setTimeout(run.finish, duration + 80);
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(timer);
-      started.current = false;
+      run.cancel();
+      if (completion.current === run) completion.current = null;
     };
   }, [spinning, resultId, targetRotation, duration, onComplete]);
 
@@ -67,9 +78,17 @@ export default function Wheel({
       <div className="wheel-rim">
         <div
           className="wheel-disc"
-          style={{ transform: `rotate(${rotation}deg)`, transitionDuration: `${duration}ms` }}
+          style={{
+            transform: `rotate(${rotation}deg)`,
+            transitionDuration: `${duration}ms`,
+          }}
           onTransitionEnd={(event) => {
-            if (event.propertyName === 'transform' && spinning) onComplete();
+            if (
+              event.target === event.currentTarget &&
+              event.propertyName === 'transform' &&
+              spinning
+            )
+              completion.current?.finish();
           }}
         >
           <svg

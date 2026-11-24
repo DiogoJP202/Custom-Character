@@ -9,18 +9,22 @@ import {
 import type { GameState } from '../lib/game.ts';
 import { advancedSummary } from '../lib/advanced.ts';
 import { domainSummary } from '../lib/domains.ts';
+import type { ReactNode } from 'react';
 
 export default function CharacterSheet({
   state,
   onInspect,
   showSummaries = true,
   scope,
+  compact = false,
 }: {
   state: GameState;
   onInspect: (stepId: string) => void;
   showSummaries?: boolean;
   scope?: readonly string[];
+  compact?: boolean;
 }) {
+  const currentChapter = wheels.find((wheel) => wheel.id === state.stepId)?.chapterId;
   const visibleResults =
     state.phase === 'spinning'
       ? Object.fromEntries(Object.entries(state.results).filter(([step]) => step !== state.stepId))
@@ -34,7 +38,10 @@ export default function CharacterSheet({
     (wheel) => visibleResults[wheel.id] && forcedOutcome(wheel, visibleState),
   ).length;
   return (
-    <aside className="character-sheet" aria-labelledby="sheet-title">
+    <aside
+      className={`character-sheet ${compact ? 'sheet-compact' : ''}`}
+      aria-labelledby="sheet-title"
+    >
       <div className="sheet-header">
         <span>Registro do personagem</span>
         <span className="sheet-status">
@@ -46,17 +53,23 @@ export default function CharacterSheet({
       </h2>
       {chapters.map(
         (chapter, index) =>
+          (!compact ||
+            chapter.id === currentChapter ||
+            wheels.some((wheel) => wheel.chapterId === chapter.id && visibleResults[wheel.id])) &&
           (!scope ||
             wheels.some((wheel) => wheel.chapterId === chapter.id && scope.includes(wheel.id))) && (
-            <section
-              className="sheet-chapter-group"
+            <SheetChapter
               key={chapter.id}
-              aria-labelledby={`sheet-${chapter.id}`}
+              id={`sheet-${chapter.id}`}
+              compact={compact}
+              open={state.phase !== 'spinning' && chapter.id === currentChapter}
+              title={
+                <h3 id={`sheet-${chapter.id}`} className="sheet-chapter">
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  {chapter.name}
+                </h3>
+              }
             >
-              <h3 id={`sheet-${chapter.id}`} className="sheet-chapter">
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                {chapter.name}
-              </h3>
               <dl className="sheet-attributes">
                 {wheels
                   .filter(
@@ -148,12 +161,13 @@ export default function CharacterSheet({
                   <small>Capacidade efetiva: interpretação qualitativa do jogo.</small>
                 </div>
               )}
-            </section>
+            </SheetChapter>
           ),
       )}
       <div className="sheet-footer">
         <strong>
-          {count} resultado{count !== 1 ? 's' : ''} registrado{count !== 1 ? 's' : ''}
+          {count} resultado{count !== 1 ? 's' : ''} registrado
+          {count !== 1 ? 's' : ''}
           {automaticCount > 0 &&
             ` · ${automaticCount} automático${automaticCount !== 1 ? 's' : ''}`}
         </strong>
@@ -164,5 +178,31 @@ export default function CharacterSheet({
         </p>
       </div>
     </aside>
+  );
+}
+
+function SheetChapter({
+  id,
+  title,
+  compact,
+  open,
+  children,
+}: {
+  id: string;
+  title: ReactNode;
+  compact: boolean;
+  open: boolean;
+  children: ReactNode;
+}) {
+  return compact ? (
+    <details className="sheet-chapter-group" open={open}>
+      <summary>{title}</summary>
+      {children}
+    </details>
+  ) : (
+    <section className="sheet-chapter-group" aria-labelledby={id}>
+      {title}
+      {children}
+    </section>
   );
 }

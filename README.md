@@ -123,6 +123,10 @@ O registro v1 fixa seu limite histórico em `domain-expansion`; sua validação 
 
 “Exportar PNG” está disponível na ficha concluída e nas fichas da galeria. Gera um dossiê de 1200 × 2160 px, com identidade, capacidades e interpretações resumidas do perfil existente, sem novos sorteios ou alterações no armazenamento. `html-to-image` é carregado somente ao exportar; as fontes locais são incorporadas. A geração tem feedback, limite de tempo e verificação de conteúdo para evitar cortes. O link “Baixar PNG novamente” permanece disponível se o navegador não iniciar o download; a gravação final depende das permissões do navegador. A renderização pode variar entre navegadores e fontes de substituição usadas em nomes com caracteres não latinos.
 
+### Ritmo e revelações
+
+O ritmo Padrão (2,2 s) ou Rápido (0,8 s) fica em `jjk-spinner-preferences:v1`, separado da partida; movimento reduzido elimina a animação. As revelações resumem a capacidade e sua principal consequência, com explicações completas em “Entender habilidade/resultado”. A ficha em criação recolhe os capítulos anteriores. Quatro clipes oficiais opcionais usam o player do YouTube após interação, sem interferir na progressão ou no PNG. A pesquisa, condições de incorporação e candidatos descartados estão em [docs/media-research.md](docs/media-research.md).
+
 ## Referências e limites de cânone
 
 Este é um projeto de fãs. **Comparações de desempenho, probabilidades e combinações são abstrações do jogo, não classificações oficiais.** Referências físicas não concedem técnicas, armas, regeneração ou a natureza do personagem citado. Megumi, Panda, Maki, Todo, Yuji e Hanami são considerados no arco do Intercâmbio; Toji, em Shibuya. “Sem clã conhecido” descreve a ausência de vínculo estabelecido pelo jogo, não uma classificação oficial.

@@ -1,5 +1,9 @@
 import { useEffect, useRef, type Ref } from 'react';
-import type { WheelOption } from '../data/wheels.ts';
+import { getOption, type WheelOption } from '../data/wheels.ts';
+import { revealPresentation } from '../lib/gameplay.ts';
+import type { RuleContext } from '../lib/conditions.ts';
+import ResultMedia from './ResultMedia.tsx';
+import { mediaForResult } from '../data/reveal-media.ts';
 
 function ResultContent({
   attribute,
@@ -126,7 +130,7 @@ function ResultContent({
             </section>
           )}
         {(reference || result.notes || result.sources?.length) && (
-          <details className="reference-details">
+          <details className="reference-details" open>
             <summary>
               {reference ? 'Feitos, fontes e limites' : 'Contexto, fontes e limites'}{' '}
               <span aria-hidden="true">+</span>
@@ -215,6 +219,8 @@ function ResultContent({
 }
 
 export default function ResultReveal({
+  stepId,
+  state,
   attribute,
   result,
   onContinue,
@@ -223,6 +229,8 @@ export default function ResultReveal({
   reducedMotion = false,
   automaticReason,
 }: {
+  stepId: string;
+  state: RuleContext;
   attribute: string;
   result: WheelOption;
   onContinue: () => void;
@@ -231,6 +239,7 @@ export default function ResultReveal({
   reducedMotion?: boolean;
   automaticReason?: string;
 }) {
+  const presentation = revealPresentation(stepId, result, state);
   const heading = useRef<HTMLHeadingElement>(null);
   const panel = useRef<HTMLElement>(null);
   const hasFocused = useRef(false);
@@ -238,28 +247,65 @@ export default function ResultReveal({
     if (!focusOnMount || hasFocused.current) return;
     hasFocused.current = true;
     heading.current?.focus({ preventScroll: true });
-    // Reveal more of a long result while leaving the bottom of the wheel as context.
+    // The reveal occupies the wheel's space; only scroll if it is outside the reading area.
     const bounds = panel.current?.getBoundingClientRect();
-    const context = Math.min(144, window.innerHeight * 0.2);
-    if (bounds && automaticReason && bounds.top < 24) {
-      // Removing the wheel shortens this stage; keep its explanation in view.
-      window.scrollBy({ top: bounds.top - 24, behavior: reducedMotion ? 'instant' : 'smooth' });
-    } else if (bounds && bounds.bottom > window.innerHeight && bounds.top > context) {
+    if (bounds && (bounds.top < 12 || bounds.top > window.innerHeight * 0.55)) {
       window.scrollBy({
-        top: Math.min(bounds.top - context, bounds.bottom - window.innerHeight + 24),
+        top: bounds.top - 24,
         behavior: reducedMotion ? 'instant' : 'smooth',
       });
     }
   }, [focusOnMount, reducedMotion, automaticReason]);
   return (
-    <section ref={panel} className="result-reveal" aria-labelledby="result-title">
-      <ResultContent
-        attribute={attribute}
-        result={result}
-        headingId="result-title"
-        headingRef={heading}
-        automaticReason={automaticReason}
+    <section
+      ref={panel}
+      className={`result-reveal quick-reveal reveal-${presentation.kind} ${automaticReason ? 'reveal-automatic' : ''} ${mediaForResult(stepId, result.id) ? 'reveal-with-media' : ''}`}
+      aria-labelledby="result-title"
+    >
+      <header className="quick-result-header">
+        <span className="result-attribute">
+          {automaticReason ? 'Consequência automática' : 'Resultado'} / {attribute}
+        </span>
+        <h2 id="result-title" ref={heading} tabIndex={-1}>
+          {result.name}
+        </h2>
+        {result.reference && !['energy', 'proficiency'].includes(result.reference.topic ?? '') && (
+          <p className="quick-reference">
+            {result.adjustment ? 'Referência sorteada · ' : ''}
+            {result.reference.character}
+            {!result.domain && ` · ${result.reference.version}`}
+          </p>
+        )}
+        {result.domain && (
+          <span className="manifestation-tag">
+            {result.domain.manifestation === 'incomplete'
+              ? 'Manifestação incompleta'
+              : 'Manifestação completa documentada'}
+          </span>
+        )}
+        {result.reference?.topic === 'proficiency' && (
+          <p className="quick-reference">
+            Técnica: {getOption('innate-technique', state.results['innate-technique'])?.name}
+          </p>
+        )}
+      </header>
+      <ResultMedia
+        key={`${stepId}/${result.id}`}
+        stepId={stepId}
+        resultId={result.id}
+        kind={presentation.kind}
       />
+      <div className="quick-result-copy">
+        <p className="quick-description">{presentation.summary}</p>
+        {presentation.consequence && (
+          <p className="quick-consequence">{presentation.consequence}</p>
+        )}
+        {automaticReason && !presentation.consequence && (
+          <p className="automatic-label">
+            Definido pelas condições anteriores, sem consumir um sorteio.
+          </p>
+        )}
+      </div>
       <div className="result-actions">
         {import.meta.env.DEV && onRetry && (
           <button className="button button-secondary" onClick={onRetry}>
@@ -270,6 +316,18 @@ export default function ResultReveal({
           Continuar
         </button>
       </div>
+      <details className="quick-details">
+        <summary>
+          {result.technique || result.domain ? 'Entender habilidade' : 'Entender resultado'}{' '}
+          <span aria-hidden="true">+</span>
+        </summary>
+        <ResultContent
+          attribute={attribute}
+          result={result}
+          headingId="result-full-title"
+          automaticReason={automaticReason}
+        />
+      </details>
     </section>
   );
 }

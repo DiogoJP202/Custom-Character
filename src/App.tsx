@@ -8,6 +8,8 @@ import CharacterSheet from './components/CharacterSheet.tsx';
 import FinalCharacterSheet from './components/FinalCharacterSheet.tsx';
 import ResultReveal, { ResultDialog } from './components/ResultReveal.tsx';
 import CharacterGallery, { GalleryNameDialog } from './components/CharacterGallery.tsx';
+import CreationProgress from './components/CreationProgress.tsx';
+import { loadSpinPace, saveSpinPace, PREFERENCES_KEY } from './lib/gameplay.ts';
 import {
   GALLERY_STORAGE_KEY,
   loadGallery,
@@ -24,6 +26,7 @@ export default function App() {
   const [view, setView] = useState<'creation' | 'gallery'>('creation');
   const [saveOpen, setSaveOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [pace, setPace] = useState(loadSpinPace);
   const focusAfterSave = useRef(false);
   const savedCharacter = findSavedCharacter(gallery.records, state);
   const [inspectedStep, setInspectedStep] = useState<string | null>(null);
@@ -70,10 +73,14 @@ export default function App() {
   useEffect(() => {
     const synchronize = (event: StorageEvent) => {
       if (event.key === GALLERY_STORAGE_KEY || event.key === null) setGallery(loadGallery());
+      if (event.key === PREFERENCES_KEY || event.key === null) setPace(loadSpinPace());
     };
     window.addEventListener('storage', synchronize);
     return () => window.removeEventListener('storage', synchronize);
   }, []);
+  useEffect(() => {
+    saveSpinPace(pace);
+  }, [pace]);
 
   function applyGalleryResult(result: GalleryResult) {
     if (result.ok) setGallery(result.gallery);
@@ -224,16 +231,39 @@ export default function App() {
                   Modo de teste ativo. Você pode repetir os giros e testar outros resultados.
                 </p>
               )}
-              {!isIntro && !terminal && (
-                <button
-                  className="creation-cancel"
-                  aria-haspopup="dialog"
-                  onClick={() => setCancelOpen(true)}
-                >
-                  Cancelar criação
-                </button>
+              {!terminal && (
+                <div className="game-controls">
+                  <fieldset
+                    className="pace-control"
+                    disabled={state.phase === 'spinning'}
+                    aria-describedby={reducedMotion ? 'pace-motion-note' : undefined}
+                  >
+                    <legend>Ritmo do giro</legend>
+                    <button aria-pressed={pace === 'standard'} onClick={() => setPace('standard')}>
+                      Padrão
+                    </button>
+                    <button aria-pressed={pace === 'fast'} onClick={() => setPace('fast')}>
+                      Rápido
+                    </button>
+                  </fieldset>
+                  {!isIntro && (
+                    <button
+                      className="creation-cancel"
+                      aria-haspopup="dialog"
+                      onClick={() => setCancelOpen(true)}
+                    >
+                      Cancelar criação
+                    </button>
+                  )}
+                </div>
+              )}
+              {!terminal && reducedMotion && (
+                <p id="pace-motion-note" className="pace-motion-note">
+                  Movimento reduzido ativo: giro sem animação.
+                </p>
               )}
             </div>
+            {!isIntro && !terminal && <CreationProgress state={state} />}
             {terminal ? (
               <FinalCharacterSheet
                 state={state}
@@ -246,7 +276,7 @@ export default function App() {
               />
             ) : (
               <>
-                {!forced && (
+                {!forced && state.phase !== 'revealed' && (
                   <>
                     <Wheel
                       key={`${wheel.id}-${wheelRun}`}
@@ -254,51 +284,48 @@ export default function App() {
                       spinning={state.phase === 'spinning'}
                       resultId={result?.id}
                       reducedMotion={reducedMotion}
+                      pace={pace}
                       onComplete={completeSpin}
                     />
                     <div className="wheel-interaction">
                       <p className="live-status" role="status" aria-live="polite">
-                        {state.phase === 'spinning'
-                          ? 'Girando…'
-                          : state.phase === 'revealed'
-                            ? `Resultado: ${result?.name}`
-                            : '\u00a0'}
+                        {state.phase === 'spinning' ? 'Girando…' : '\u00a0'}
                       </p>
-                      {state.phase !== 'revealed' && (
-                        <>
-                          <button
-                            className="button button-primary spin-button"
-                            disabled={state.phase === 'spinning'}
-                            onClick={isIntro ? () => dispatch({ type: 'start' }) : spin}
-                            aria-label={
-                              isIntro
-                                ? 'Criar personagem'
-                                : state.phase === 'spinning'
-                                  ? 'Girando roleta'
-                                  : `Girar roleta de ${wheel.name}`
-                            }
-                          >
-                            {isIntro
+                      <>
+                        <button
+                          className="button button-primary spin-button"
+                          disabled={state.phase === 'spinning'}
+                          onClick={isIntro ? () => dispatch({ type: 'start' }) : spin}
+                          aria-label={
+                            isIntro
                               ? 'Criar personagem'
                               : state.phase === 'spinning'
-                                ? 'Girando…'
-                                : 'Girar roleta'}
-                          </button>
-                          <p className="secondary-note">
-                            {isIntro
-                              ? 'Origem, condição especial, atributos físicos, energia, técnica e suas aplicações.'
-                              : testMode
-                                ? 'Modo de teste: novos giros estão liberados.'
-                                : 'O resultado não pode ser alterado.'}
-                          </p>
-                        </>
-                      )}
+                                ? 'Girando roleta'
+                                : `Girar roleta de ${wheel.name}`
+                          }
+                        >
+                          {isIntro
+                            ? 'Criar personagem'
+                            : state.phase === 'spinning'
+                              ? 'Girando…'
+                              : 'Girar roleta'}
+                        </button>
+                        <p className="secondary-note">
+                          {isIntro
+                            ? 'Origem, condição especial, atributos físicos, energia, técnica e suas aplicações.'
+                            : testMode
+                              ? 'Modo de teste: novos giros estão liberados.'
+                              : 'O resultado não pode ser alterado.'}
+                        </p>
+                      </>
                     </div>
                   </>
                 )}
                 {state.phase === 'revealed' && result && (
                   <ResultReveal
                     key={wheel.id}
+                    stepId={wheel.id}
+                    state={state}
                     attribute={wheel.name}
                     result={result}
                     focusOnMount={!inspectedResult && !cancelOpen}
@@ -349,14 +376,24 @@ export default function App() {
               </>
             )}
           </section>
-          {!terminal && <CharacterSheet state={state} onInspect={setInspectedStep} />}
+          {!terminal && (
+            <CharacterSheet
+              state={state}
+              onInspect={setInspectedStep}
+              compact
+              showSummaries={false}
+            />
+          )}
         </main>
       )}
       <footer className="site-footer">
         <span>
           Custom Character <span aria-hidden="true">/</span> Jujutsu Kaisen
         </span>
-        <p>Projeto de fãs, sem vínculo oficial. Universo de Gege Akutami.</p>
+        <p>
+          Projeto de fãs, sem vínculo oficial. Comparações, escalas e probabilidades são
+          interpretações do jogo. Universo de Gege Akutami.
+        </p>
       </footer>
       {view === 'creation' && cancelOpen && !isIntro && !terminal && (
         <CancelCreationDialog onKeep={() => setCancelOpen(false)} onConfirm={cancelCreation} />
@@ -394,7 +431,13 @@ export default function App() {
   );
 }
 
-function CancelCreationDialog({ onKeep, onConfirm }: { onKeep: () => void; onConfirm: () => void }) {
+function CancelCreationDialog({
+  onKeep,
+  onConfirm,
+}: {
+  onKeep: () => void;
+  onConfirm: () => void;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const element = dialog.current!;
@@ -418,8 +461,8 @@ function CancelCreationDialog({ onKeep, onConfirm }: { onKeep: () => void; onCon
     >
       <h2 id="cancel-creation-title">Cancelar criação?</h2>
       <p id="cancel-creation-description">
-        Os resultados da criação atual serão descartados e você voltará à roleta de Natureza.
-        Os personagens salvos na galeria serão mantidos.
+        Os resultados da criação atual serão descartados e você voltará à roleta de Natureza. Os
+        personagens salvos na galeria serão mantidos.
       </p>
       <div>
         <button className="button button-secondary" onClick={onKeep} autoFocus>
